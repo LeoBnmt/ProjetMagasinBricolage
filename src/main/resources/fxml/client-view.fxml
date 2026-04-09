@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.client.ClientController">
+   <top>
+      <Label styleClass="title" text="Brico-Merlin - Point de Vente" BorderPane.alignment="CENTER">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+         <BorderPane.margin>
+            <Insets bottom="20.0" top="10.0" />
+         </BorderPane.margin>
+      </Label>
+   </top>
+   <center>
+      <TabPane>
+         <Tab text="Gestion Articles">
+            <VBox spacing="10.0">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+
+               <HBox spacing="10.0">
+                  <Label text="Référence:" />
+                  <TextField fx:id="referenceField" prefWidth="150.0" />
+                  <Button onAction="#consulterArticle" text="Consulter Stock" />
+               </HBox>
+
+               <HBox spacing="10.0">
+                  <Label text="Famille:" />
+                  <TextField fx:id="familleField" prefWidth="150.0" />
+                  <Button onAction="#rechercherParFamille" text="Rechercher par Famille" />
+               </HBox>
+
+               <HBox spacing="10.0">
+                  <Label text="Ajouter Stock:" />
+                  <TextField fx:id="stockQuantiteField" prefWidth="100.0" promptText="Quantité" />
+                  <Button onAction="#ajouterStock" text="Ajouter Stock" />
+               </HBox>
+
+               <TableView fx:id="articleTable" prefHeight="200.0">
+                  <columns>
+                     <TableColumn fx:id="refColumn" text="Référence" />
+                     <TableColumn fx:id="familleColumn" text="Famille" />
+                     <TableColumn fx:id="prixColumn" text="Prix Unitaire" />
+                     <TableColumn fx:id="stockColumn" text="Stock" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </Tab>
+
+         <Tab text="Vente">
+            <VBox spacing="10.0">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+
+               <GridPane hgap="10.0" vgap="10.0">
+                  <columnConstraints>
+                     <ColumnConstraints />
+                     <ColumnConstraints />
+                     <ColumnConstraints />
+                  </columnConstraints>
+                  <rowConstraints>
+                     <RowConstraints />
+                     <RowConstraints />
+                     <RowConstraints />
+                  </rowConstraints>
+
+                  <Label text="Client ID:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <TextField fx:id="clientIdField" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                  <Label text="Référence Article:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <TextField fx:id="referenceVenteField" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                  <Label text="Quantité:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                  <TextField fx:id="quantiteField" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                  <Label text="Mode Paiement:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                  <ComboBox fx:id="modePaiementCombo" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+
+                  <Button onAction="#acheterArticle" text="Effectuer Achat" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+               </GridPane>
+            </VBox>
+         </Tab>
+
+         <Tab text="Facturation">
+            <VBox spacing="10.0">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+
+               <HBox spacing="10.0">
+                  <Label text="ID Facture:" />
+                  <TextField fx:id="factureIdField" prefWidth="100.0" />
+                  <Button onAction="#consulterFacture" text="Consulter Facture" />
+                  <Button onAction="#payerFacture" text="Payer Facture" />
+               </HBox>
+
+               <HBox spacing="10.0">
+                  <Label text="Client ID:" />
+                  <TextField fx:id="clientIdField" prefWidth="150.0" />
+                  <Button onAction="#voirFacturesClient" text="Voir Factures Client" />
+               </HBox>
+
+               <TableView fx:id="factureTable" prefHeight="200.0">
+                  <columns>
+                     <TableColumn fx:id="factureIdColumn" text="ID" />
+                     <TableColumn fx:id="clientColumn" text="Client" />
+                     <TableColumn fx:id="totalColumn" text="Total" />
+                     <TableColumn fx:id="dateColumn" text="Date" />
+                     <TableColumn fx:id="payeeColumn" text="Payée" />
+                  </columns>
+               </TableView>
+            </VBox>
+         </Tab>
+
+         <Tab text="Statistiques">
+            <VBox spacing="10.0">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+
+               <HBox spacing="10.0">
+                  <Label text="Date:" />
+                  <DatePicker fx:id="datePicker" />
+                  <Button onAction="#calculerChiffreAffaires" text="Calculer Chiffre d'Affaires" />
+               </HBox>
+            </VBox>
+         </Tab>
+      </TabPane>
+   </center>
+
+   <bottom>
+      <VBox>
+         <Label text="Résultats:" />
+         <TextArea fx:id="resultArea" prefHeight="150.0" wrapText="true" editable="false" />
+      </VBox>
+   </bottom>
+</BorderPane>

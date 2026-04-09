@@ -1,11 +1,17 @@
 CREATE DATABASE IF NOT EXISTS brico_merlin;
 USE brico_merlin;
 
+CREATE TABLE familles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL UNIQUE
+) ENGINE=InnoDB;
+
 CREATE TABLE articles (
     ref VARCHAR(50) PRIMARY KEY,
-    famille VARCHAR(100) NOT NULL,
+    famille_id INT NOT NULL,
     prix_unitaire DECIMAL(10,2) NOT NULL,
-    stock INT NOT NULL DEFAULT 0
+    stock INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (famille_id) REFERENCES familles(id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE factures (
@@ -28,10 +34,15 @@ CREATE TABLE lignes_facture (
 ) ENGINE=InnoDB;
 
 -- Données de test
+INSERT INTO familles (nom) VALUES
+    ('Visserie'),
+    ('Peinture'),
+    ('Outillage');
+
 INSERT INTO articles VALUES
-    ('ART001', 'Visserie',  2.50,  100),
-    ('ART002', 'Visserie',  1.20,  50),
-    ('ART003', 'Peinture',  15.00, 20),
-    ('ART004', 'Outillage', 49.99, 10),
-    ('ART005', 'Peinture',  8.90,  35),
-    ('ART006', 'Outillage', 12.50, 0);
+    ('ART001', 1, 2.50,  100),
+    ('ART002', 1, 1.20,  50),
+    ('ART003', 2, 15.00, 20),
+    ('ART004', 3, 49.99, 10),
+    ('ART005', 2, 8.90,  35),
+    ('ART006', 3, 12.50, 0);
