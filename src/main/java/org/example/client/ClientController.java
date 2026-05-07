@@ -77,9 +77,18 @@ public class ClientController {
         payeeColumn.setCellValueFactory(new PropertyValueFactory<>("payee"));
     }
 
+    private boolean checkConnection() {
+        if (magasinService == null) {
+            resultArea.setText("Non connecté au serveur magasin. Vérifiez que le serveur RMI est démarré sur localhost:1099.");
+            return false;
+        }
+        return true;
+    }
+
     @FXML
     private void consulterArticle() {
         System.out.println("🖱️ CLIENT: Bouton 'Consulter Stock' cliqué!");
+        if (!checkConnection()) return;
         try {
             String reference = referenceField.getText().trim();
             System.out.println("📝 CLIENT: Référence saisie = '" + reference + "'");
@@ -105,6 +114,7 @@ public class ClientController {
 
     @FXML
     private void rechercherParFamille() {
+        if (!checkConnection()) return;
         try {
             String famille = familleField.getText().trim();
             if (famille.isEmpty()) {
@@ -140,6 +150,7 @@ public class ClientController {
 
     @FXML
     private void acheterArticle() {
+        if (!checkConnection()) return;
         try {
             String clientId = clientIdField.getText().trim();
             String reference = referenceVenteField.getText().trim();
@@ -175,6 +186,7 @@ public class ClientController {
 
     @FXML
     private void consulterFacture() {
+        if (!checkConnection()) return;
         try {
             String factureIdStr = factureIdField.getText().trim();
             if (factureIdStr.isEmpty()) {
@@ -222,6 +234,7 @@ public class ClientController {
 
     @FXML
     private void payerFacture() {
+        if (!checkConnection()) return;
         try {
             String factureIdStr = factureIdField.getText().trim();
             String modePaiement = modePaiementCombo.getValue();
