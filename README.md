@@ -123,3 +123,7 @@ La base de données est initialisée avec des articles de test :
 - **MySQL 8.0** : Base de données
 - **Maven** : Gestion des dépendances
 - **Docker** : Conteneurisation
+
+
+mvn exec:java -Dexec.mainClass=org.example.server.magasin.MagasinServer                                                                             
+mvn exec:java -Dexec.mainClass=org.example.server.siege.SiegeServer                                                                                               

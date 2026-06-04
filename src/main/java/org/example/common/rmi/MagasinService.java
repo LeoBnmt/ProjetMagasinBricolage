@@ -12,6 +12,8 @@ import java.util.List;
 
 public interface MagasinService extends Remote {
 
+    List<Article> getTousLesArticles() throws RemoteException;
+
     Article consulterStockArticle(String reference) throws RemoteException;
 
     List<String> rechercherArticleParFamille(String famille) throws RemoteException;

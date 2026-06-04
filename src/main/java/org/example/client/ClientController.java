@@ -55,6 +55,10 @@ public class ClientController {
             // Configuration des colonnes de table
             setupTableColumns();
 
+            // Charger tous les articles au démarrage
+            List<Article> articles = magasinService.getTousLesArticles();
+            articleTable.setItems(FXCollections.observableArrayList(articles));
+
             resultArea.setText("Connexion au serveur magasin réussie!");
 
         } catch (Exception e) {
