@@ -2,6 +2,7 @@ package org.example.common.rmi;
 
 import org.example.common.model.Article;
 import org.example.common.model.Facture;
+import org.example.common.model.Famille;
 import org.example.common.model.LigneFacture;
 
 import java.math.BigDecimal;
@@ -14,6 +15,8 @@ import java.util.Map;
 public interface MagasinService extends Remote {
 
     List<Article> getTousLesArticles() throws RemoteException;
+
+    List<Famille> getToutesLesFamilles() throws RemoteException;
 
     Article consulterStockArticle(String reference) throws RemoteException;
 
@@ -34,4 +37,6 @@ public interface MagasinService extends Remote {
     void recevoirMiseAJourPrix(Map<String, BigDecimal> nouveauxPrix) throws RemoteException;
 
     List<Facture> getToutesLesFactures() throws RemoteException;
+
+    void viderFichierFactures() throws RemoteException;
 }

@@ -91,10 +91,13 @@ public class SiegeServer {
                 // 1. Récupérer toutes les factures du Magasin via RMI
                 List<Facture> factures = magasinService.getToutesLesFactures();
 
-                // 2. Les sauvegarder côté siège
+                // 2. Les sauvegarder côté siège (archivage dans un fichier .txt daté)
                 siegeService.sauvegarderFactures(factures);
 
-                System.out.println("[MAGASIN → SIÈGE] " + factures.size() + " facture(s) sauvegardée(s).");
+                // 3. Vider le fichier factures.txt du magasin après archivage
+                magasinService.viderFichierFactures();
+
+                System.out.println("[MAGASIN → SIÈGE] " + factures.size() + " facture(s) archivée(s), fichier magasin vidé.");
 
             } catch (Exception e) {
                 System.err.println("Erreur lors de la sauvegarde des factures : " + e.getMessage());

@@ -5,8 +5,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Facture implements Serializable {
+
+    public static final String SEPARATOR = "========================================";
+    public static final String LINE_SEP  = "----------------------------------------";
+
     private Long id;
     private String clientId;
     private BigDecimal totalFacture;
@@ -93,6 +98,27 @@ public class Facture implements Serializable {
 
     public void setPayee(boolean payee) {
         this.payee = payee;
+    }
+
+    public String toTicket() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("FACTURE #").append(id).append("\n");
+        sb.append("Date : ").append(dateFacturation).append("\n");
+        sb.append("Client : ").append(clientId).append("\n");
+        sb.append("Mode : ").append(modePaiement).append("\n");
+        sb.append("Statut : ").append(payee ? "PAYEE" : "EN_ATTENTE").append("\n");
+        sb.append(LINE_SEP).append("\n");
+        for (LigneFacture ligne : lignes) {
+            sb.append(String.format(Locale.US, "%-10s | x%-3d | %8.2f€ | %8.2f€\n",
+                    ligne.getReferenceArticle(),
+                    ligne.getQuantite(),
+                    ligne.getPrixUnitaire(),
+                    ligne.getSousTotal()));
+        }
+        sb.append("TOTAL : ").append(String.format(Locale.US, "%.2f€", totalFacture)).append("\n");
+        sb.append(LINE_SEP).append("\n");
+        sb.append(SEPARATOR).append("\n\n");
+        return sb.toString();
     }
 
     @Override

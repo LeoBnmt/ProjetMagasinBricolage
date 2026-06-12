@@ -84,6 +84,7 @@
                      <Label text="Référence :" styleClass="form-label" minWidth="140.0" />
                      <ComboBox fx:id="referenceCombo" prefWidth="190.0" promptText="Sélectionner un article" />
                      <Button onAction="#consulterArticle" text="Consulter Stock" styleClass="btn-primary" />
+                     <Button onAction="#voirTousLesArticles" text="Voir tous" styleClass="btn-primary" />
                   </HBox>
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
                      <Label text="Famille :" styleClass="form-label" minWidth="140.0" />
@@ -99,10 +100,11 @@
 
                <TableView fx:id="articleTable" VBox.vgrow="ALWAYS" maxWidth="Infinity">
                   <columns>
-                     <TableColumn fx:id="refColumn"     text="Référence"     prefWidth="160.0" />
-                     <TableColumn fx:id="familleColumn" text="Famille"       prefWidth="160.0" />
-                     <TableColumn fx:id="prixColumn"    text="Prix unitaire" prefWidth="160.0" />
-                     <TableColumn fx:id="stockColumn"   text="Stock"         prefWidth="100.0" />
+                     <TableColumn fx:id="refColumn"     text="Référence"     prefWidth="120.0" />
+                     <TableColumn fx:id="nomColumn"     text="Nom"           prefWidth="200.0" />
+                     <TableColumn fx:id="familleColumn" text="Famille"       prefWidth="130.0" />
+                     <TableColumn fx:id="prixColumn"    text="Prix unitaire" prefWidth="120.0" />
+                     <TableColumn fx:id="stockColumn"   text="Stock"         prefWidth="80.0" />
                   </columns>
                </TableView>
             </VBox>
