@@ -169,6 +169,7 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
             conn.commit();
 
             Facture facture = new Facture(clientId, modePaiement);
+            facture.setPayee(true);
             facture.ajouterLigne(new LigneFacture(
                     referenceArticle, article.getNom(), quantite, article.getPrixUnitaire()));
             factureStore.saveFacture(facture);
