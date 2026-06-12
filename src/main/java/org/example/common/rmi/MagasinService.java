@@ -24,6 +24,8 @@ public interface MagasinService extends Remote {
 
     boolean acheterArticle(String clientId, String referenceArticle, int quantite, String modePaiement) throws RemoteException;
 
+    boolean passerEnCaisse(String clientId, Map<String, Integer> panier, String modePaiement) throws RemoteException;
+
     boolean payerFacture(Long factureId, String modePaiement) throws RemoteException;
 
     Facture consulterFacture(Long factureId) throws RemoteException;

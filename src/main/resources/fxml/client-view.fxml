@@ -118,36 +118,41 @@
 
                <Label text="Nouvelle Vente" styleClass="section-title" />
 
-               <VBox styleClass="card" spacing="16.0">
-                  <GridPane hgap="16.0" vgap="14.0">
-                     <columnConstraints>
-                        <ColumnConstraints minWidth="140.0" />
-                        <ColumnConstraints prefWidth="210.0" hgrow="ALWAYS" />
-                        <ColumnConstraints minWidth="140.0" />
-                        <ColumnConstraints prefWidth="210.0" hgrow="ALWAYS" />
-                     </columnConstraints>
-                     <rowConstraints>
-                        <RowConstraints minHeight="36.0" />
-                        <RowConstraints minHeight="36.0" />
-                     </rowConstraints>
+               <VBox styleClass="card" spacing="12.0">
+                  <!-- Infos client -->
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="Client ID :" styleClass="form-label" minWidth="140.0" />
+                     <TextField fx:id="clientIdVenteField" prefWidth="200.0" promptText="ID du client" />
+                     <Label text="Mode de paiement :" styleClass="form-label" minWidth="140.0" />
+                     <ComboBox fx:id="modePaiementCombo" prefWidth="180.0" />
+                  </HBox>
 
-                     <Label text="Client ID :"           styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                     <TextField fx:id="clientIdVenteField" prefWidth="210.0" promptText="ID du client"  GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                     <Label text="Mode de paiement :"    styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                     <ComboBox fx:id="modePaiementCombo" prefWidth="210.0"                              GridPane.columnIndex="3" GridPane.rowIndex="0" />
-
-                     <Label text="Référence article :"   styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                     <ComboBox fx:id="referenceVenteCombo" prefWidth="210.0" promptText="Sélectionner un article"  GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                     <Label text="Quantité :"            styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-                     <TextField fx:id="quantiteField"    prefWidth="120.0"       promptText="1"          GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                  </GridPane>
-
-                  <HBox alignment="CENTER_RIGHT">
-                     <Button onAction="#acheterArticle" text="Effectuer l'Achat" styleClass="btn-success" />
+                  <!-- Ajout article -->
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="Article :" styleClass="form-label" minWidth="140.0" />
+                     <ComboBox fx:id="referenceVenteCombo" prefWidth="250.0" promptText="Sélectionner un article" />
+                     <Label text="Quantité :" styleClass="form-label" />
+                     <TextField fx:id="quantiteField" prefWidth="80.0" promptText="1" />
+                     <Button onAction="#ajouterAuPanier" text="Ajouter au panier" styleClass="btn-primary" />
                   </HBox>
                </VBox>
+
+               <!-- Panier -->
+               <TableView fx:id="panierTable" VBox.vgrow="ALWAYS" maxWidth="Infinity">
+                  <columns>
+                     <TableColumn fx:id="panierRefColumn"      text="Référence"     prefWidth="120.0" />
+                     <TableColumn fx:id="panierNomColumn"      text="Article"        prefWidth="220.0" />
+                     <TableColumn fx:id="panierQteColumn"      text="Quantité"       prefWidth="80.0" />
+                     <TableColumn fx:id="panierPrixColumn"     text="Prix unit."     prefWidth="100.0" />
+                     <TableColumn fx:id="panierSousTotalColumn" text="Sous-total"    prefWidth="100.0" />
+                  </columns>
+               </TableView>
+
+               <HBox spacing="12.0" alignment="CENTER_RIGHT">
+                  <Label fx:id="totalPanierLabel" text="Total : 0,00 €" styleClass="form-label" />
+                  <Button onAction="#viderPanier"    text="Vider le panier"  styleClass="btn-primary" />
+                  <Button onAction="#passerEnCaisse" text="Passer en caisse" styleClass="btn-success" />
+               </HBox>
             </VBox>
 
             <!-- FACTURATION -->

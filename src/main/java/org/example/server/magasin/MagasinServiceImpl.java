@@ -183,6 +183,45 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
     }
 
     @Override
+    public boolean passerEnCaisse(String clientId, Map<String, Integer> panier, String modePaiement)
+            throws RemoteException {
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            conn.setAutoCommit(false);
+
+            Facture facture = new Facture(clientId, modePaiement);
+            facture.setPayee(true);
+
+            for (Map.Entry<String, Integer> entry : panier.entrySet()) {
+                String ref     = entry.getKey();
+                int    quantite = entry.getValue();
+
+                Article article = consulterStockArticle(ref);
+                if (article == null || article.getQuantiteEnStock() < quantite) {
+                    conn.rollback();
+                    return false;
+                }
+
+                PreparedStatement stmt = conn.prepareStatement(
+                        "UPDATE articles SET stock = stock - ? WHERE ref = ?");
+                stmt.setInt(1, quantite);
+                stmt.setString(2, ref);
+                stmt.executeUpdate();
+
+                facture.ajouterLigne(new LigneFacture(ref, article.getNom(), quantite, article.getPrixUnitaire()));
+            }
+
+            conn.commit();
+            factureStore.saveFacture(facture);
+            System.out.println("Facture #" + facture.getId() + " créée — " + panier.size() + " article(s)");
+            return true;
+
+        } catch (SQLException e) {
+            throw new RemoteException("Erreur lors du passage en caisse", e);
+        }
+    }
+
+    @Override
     public Facture consulterFacture(Long factureId) throws RemoteException {
         return factureStore.readAllFactures().stream()
                 .filter(f -> f.getId().equals(factureId))
