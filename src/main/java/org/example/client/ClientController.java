@@ -3,9 +3,18 @@ package org.example.client;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.example.common.model.Article;
 import org.example.common.model.Facture;
@@ -16,6 +25,8 @@ import org.example.common.rmi.MagasinService;
 import java.math.BigDecimal;
 import java.rmi.Naming;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,7 +200,7 @@ public class ClientController {
         // Clic sur une facture → afficher son détail dans la console
         factureTable.getSelectionModel().selectedItemProperty().addListener(
             (obs, ancien, selectionne) -> {
-                if (selectionne != null) afficherDetailFacture(selectionne);
+                if (selectionne != null) afficherTicketCaisse(selectionne);
             }
         );
     }
@@ -405,17 +416,11 @@ public class ClientController {
                 panierMap.put(ligne.getReferenceArticle(), ligne.getQuantite());
             }
 
-            boolean success = magasinService.passerEnCaisse(clientId, panierMap, modePaiement);
+            Facture facture = magasinService.passerEnCaisse(clientId, panierMap, modePaiement);
 
-            if (success) {
-                StringBuilder sb = new StringBuilder("Vente enregistrée !\nClient : " + clientId + "\n---\n");
-                panier.forEach(l -> sb.append("• ").append(l.getNomArticle())
-                        .append(" x").append(l.getQuantite())
-                        .append(" = ").append(l.getSousTotal()).append("€\n"));
-                BigDecimal total = panier.stream().map(LigneFacture::getSousTotal)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                sb.append("---\nTOTAL : ").append(total).append("€");
-                resultArea.setText(sb.toString());
+            if (facture != null) {
+                resultArea.setText("Vente enregistrée — Facture N° " + facture.getId());
+                afficherTicketCaisse(facture);
                 viderPanier();
                 clientIdVenteField.clear();
             } else {
@@ -425,6 +430,87 @@ public class ClientController {
         } catch (Exception e) {
             resultArea.setText("Erreur lors du passage en caisse: " + e.getMessage());
         }
+    }
+
+    private void afficherTicketCaisse(Facture facture) {
+        Stage modal = new Stage();
+        modal.initModality(Modality.APPLICATION_MODAL);
+        modal.setTitle("Ticket de caisse");
+        modal.setResizable(false);
+
+        VBox root = new VBox(6);
+        root.setPadding(new Insets(24, 32, 24, 32));
+        root.setAlignment(Pos.CENTER);
+        root.setStyle("-fx-background-color: #fffdf4;");
+        root.setPrefWidth(360);
+
+        String sep  = "- - - - - - - - - - - - - - - - - -";
+        String sep2 = "= = = = = = = = = = = = = = = = = =";
+        Font mono      = Font.font("Courier New", 13);
+        Font monoBold  = Font.font("Courier New", FontWeight.BOLD, 14);
+        Font monoTitle = Font.font("Courier New", FontWeight.BOLD, 16);
+
+        root.getChildren().addAll(
+            ticket(sep2, mono),
+            ticketCentre("BRICO-MERLIN", monoTitle),
+            ticketCentre("Point de Vente", mono),
+            ticket(sep2, mono)
+        );
+
+        String horodatage = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy  HH:mm"));
+        root.getChildren().addAll(
+            ticket("", mono),
+            ticket("Facture N° " + facture.getId(), monoBold),
+            ticket("Date    : " + horodatage, mono),
+            ticket("Client  : " + facture.getClientId(), mono),
+            ticket(sep, mono)
+        );
+
+        for (LigneFacture ligne : facture.getLignes()) {
+            String nom = ligne.getNomArticle().length() > 18
+                    ? ligne.getNomArticle().substring(0, 18)
+                    : ligne.getNomArticle();
+            String ligneStr = String.format("%-18s x%-2d  %6.2f EUR",
+                    nom, ligne.getQuantite(), ligne.getSousTotal());
+            root.getChildren().add(ticket(ligneStr, mono));
+        }
+
+        root.getChildren().addAll(
+            ticket(sep, mono),
+            ticket(String.format("%-22s %6.2f EUR", "TOTAL :", facture.getTotalFacture()), monoBold),
+            ticket(sep, mono),
+            ticket("Mode : " + facture.getModePaiement(), mono),
+            ticket("Statut : PAYÉE ✓", mono),
+            ticket("", mono),
+            ticket(sep2, mono),
+            ticketCentre("Merci de votre visite !", mono),
+            ticketCentre("À bientôt chez BRICO-MERLIN", mono),
+            ticket(sep2, mono)
+        );
+
+        Button btnFermer = new Button("Fermer");
+        btnFermer.setStyle("-fx-background-color: #c0392b; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 24;");
+        btnFermer.setOnAction(e -> modal.close());
+        VBox.setMargin(btnFermer, new Insets(12, 0, 0, 0));
+        root.getChildren().add(btnFermer);
+
+        modal.setScene(new Scene(root));
+        modal.showAndWait();
+    }
+
+    private Label ticket(String texte, Font font) {
+        Label lbl = new Label(texte);
+        lbl.setFont(font);
+        lbl.setStyle("-fx-text-fill: #2c2c2c;");
+        return lbl;
+    }
+
+    private Label ticketCentre(String texte, Font font) {
+        Label lbl = ticket(texte, font);
+        lbl.setTextAlignment(TextAlignment.CENTER);
+        lbl.setMaxWidth(Double.MAX_VALUE);
+        lbl.setAlignment(Pos.CENTER);
+        return lbl;
     }
 
     private void mettreAJourTotalPanier() {
