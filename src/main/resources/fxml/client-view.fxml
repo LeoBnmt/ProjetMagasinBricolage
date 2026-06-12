@@ -82,12 +82,12 @@
                <VBox styleClass="card" spacing="12.0">
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
                      <Label text="Référence :" styleClass="form-label" minWidth="140.0" />
-                     <TextField fx:id="referenceField" prefWidth="190.0" promptText="ex : ART001" />
+                     <ComboBox fx:id="referenceCombo" prefWidth="190.0" promptText="Sélectionner un article" />
                      <Button onAction="#consulterArticle" text="Consulter Stock" styleClass="btn-primary" />
                   </HBox>
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
                      <Label text="Famille :" styleClass="form-label" minWidth="140.0" />
-                     <TextField fx:id="familleField" prefWidth="190.0" promptText="ex : Peinture" />
+                     <ComboBox fx:id="familleCombo" prefWidth="190.0" promptText="Sélectionner une famille" />
                      <Button onAction="#rechercherParFamille" text="Rechercher par Famille" styleClass="btn-primary" />
                   </HBox>
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
@@ -136,7 +136,7 @@
                      <ComboBox fx:id="modePaiementCombo" prefWidth="210.0"                              GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
                      <Label text="Référence article :"   styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                     <TextField fx:id="referenceVenteField" prefWidth="210.0" promptText="ex : ART001"  GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     <ComboBox fx:id="referenceVenteCombo" prefWidth="210.0" promptText="Sélectionner un article"  GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                      <Label text="Quantité :"            styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1" />
                      <TextField fx:id="quantiteField"    prefWidth="120.0"       promptText="1"          GridPane.columnIndex="3" GridPane.rowIndex="1" />

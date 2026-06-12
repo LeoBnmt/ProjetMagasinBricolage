@@ -18,9 +18,9 @@ import java.util.List;
 public class ClientController {
 
     // --- Champs de formulaire ---
-    @FXML private TextField referenceField;
-    @FXML private TextField referenceVenteField;
-    @FXML private TextField familleField;
+    @FXML private ComboBox<String> referenceCombo;
+    @FXML private ComboBox<String> referenceVenteCombo;
+    @FXML private ComboBox<String> familleCombo;
     @FXML private TextField clientIdVenteField;
     @FXML private TextField clientIdField;
     @FXML private TextField quantiteField;
@@ -75,6 +75,20 @@ public class ClientController {
 
             List<Article> articles = magasinService.getTousLesArticles();
             articleTable.setItems(FXCollections.observableArrayList(articles));
+
+            List<String> references = articles.stream()
+                    .map(Article::getReference)
+                    .sorted()
+                    .toList();
+            referenceCombo.setItems(FXCollections.observableArrayList(references));
+            referenceVenteCombo.setItems(FXCollections.observableArrayList(references));
+
+            List<String> familles = articles.stream()
+                    .map(Article::getFamille)
+                    .distinct()
+                    .sorted()
+                    .toList();
+            familleCombo.setItems(FXCollections.observableArrayList(familles));
 
             resultArea.setText("Connexion au serveur magasin réussie!");
 
@@ -145,10 +159,10 @@ public class ClientController {
         System.out.println("🖱️ CLIENT: Bouton 'Consulter Stock' cliqué!");
         if (!checkConnection()) return;
         try {
-            String reference = referenceField.getText().trim();
-            System.out.println("📝 CLIENT: Référence saisie = '" + reference + "'");
-            if (reference.isEmpty()) {
-                resultArea.setText("Veuillez saisir une référence d'article");
+            String reference = referenceCombo.getValue();
+            System.out.println("📝 CLIENT: Référence sélectionnée = '" + reference + "'");
+            if (reference == null || reference.isEmpty()) {
+                resultArea.setText("Veuillez sélectionner une référence d'article");
                 return;
             }
 
@@ -170,9 +184,9 @@ public class ClientController {
     private void rechercherParFamille() {
         if (!checkConnection()) return;
         try {
-            String famille = familleField.getText().trim();
-            if (famille.isEmpty()) {
-                resultArea.setText("Veuillez saisir une famille d'articles");
+            String famille = familleCombo.getValue();
+            if (famille == null || famille.isEmpty()) {
+                resultArea.setText("Veuillez sélectionner une famille d'articles");
                 return;
             }
 
@@ -205,11 +219,11 @@ public class ClientController {
     @FXML
     private void ajouterStock() {
         try {
-            String reference = referenceField.getText().trim();
+            String reference = referenceCombo.getValue();
             String quantiteStr = stockQuantiteField.getText().trim();
 
-            if (reference.isEmpty() || quantiteStr.isEmpty()) {
-                resultArea.setText("Veuillez saisir la référence et la quantité");
+            if (reference == null || reference.isEmpty() || quantiteStr.isEmpty()) {
+                resultArea.setText("Veuillez sélectionner la référence et saisir la quantité");
                 return;
             }
 
@@ -240,11 +254,11 @@ public class ClientController {
         if (!checkConnection()) return;
         try {
             String clientId = clientIdVenteField.getText().trim();
-            String reference = referenceVenteField.getText().trim();
+            String reference = referenceVenteCombo.getValue();
             String quantiteStr = quantiteField.getText().trim();
             String modePaiement = modePaiementCombo.getValue();
 
-            if (clientId.isEmpty() || reference.isEmpty() || quantiteStr.isEmpty()) {
+            if (clientId.isEmpty() || reference == null || reference.isEmpty() || quantiteStr.isEmpty()) {
                 resultArea.setText("Veuillez remplir tous les champs obligatoires");
                 return;
             }
