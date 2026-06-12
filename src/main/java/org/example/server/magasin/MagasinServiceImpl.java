@@ -45,26 +45,20 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
 
     @Override
     public Article consulterStockArticle(String reference) throws RemoteException {
-        System.out.println("🔍 Consultation article: " + reference);
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
             String sql = "SELECT a.ref, f.nom as famille_nom, a.prix_unitaire, a.stock FROM articles a LEFT JOIN familles f ON a.famille_id = f.id WHERE a.ref = ?";
-            System.out.println("📝 SQL: " + sql);
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, reference);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                Article article = new Article(
+                return new Article(
                     rs.getString("ref"),
                     rs.getString("famille_nom"),
                     rs.getBigDecimal("prix_unitaire"),
                     rs.getInt("stock")
                 );
-                System.out.println("✅ Article trouvé: " + article.getReference() + " | Stock: " + article.getQuantiteEnStock());
-                return article;
-            } else {
-                System.out.println("❌ Aucun article trouvé pour: " + reference);
             }
             return null;
         } catch (SQLException e) {
@@ -93,8 +87,9 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
 
     @Override
     public boolean acheterArticle(String clientId, String referenceArticle, int quantite, String modePaiement) throws RemoteException {
+        Connection conn = null;
         try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
+            conn = DatabaseConnection.getInstance().getConnection();
             conn.setAutoCommit(false);
 
             // Vérifier le stock disponible
@@ -144,7 +139,14 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
             return true;
 
         } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
             throw new RemoteException("Erreur lors de l'achat", e);
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 package org.example.server.siege;
 
-import org.example.common.model.Article;
 import org.example.common.model.Facture;
 import org.example.common.model.LigneFacture;
 import org.example.common.rmi.SiegeService;
@@ -11,7 +10,6 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,8 +42,9 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
 
     @Override
     public void sauvegarderFactures(List<Facture> factures) throws RemoteException {
+        Connection conn = null;
         try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
+            conn = DatabaseConnection.getInstance().getConnection();
             conn.setAutoCommit(false);
 
             for (Facture facture : factures) {
@@ -83,7 +82,14 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
             System.out.println("Sauvegarde de " + factures.size() + " factures effectuée");
 
         } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ignored) {}
+            }
             throw new RemoteException("Erreur lors de la sauvegarde des factures", e);
+        } finally {
+            if (conn != null) {
+                try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+            }
         }
     }
 
@@ -95,52 +101,6 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
         ResultSet rs = stmt.executeQuery();
         rs.next();
         return rs.getInt(1) > 0;
-    }
-
-    @Override
-    public List<Article> getTousLesArticles() throws RemoteException {
-        List<Article> articles = new ArrayList<>();
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            String sql = "SELECT a.ref, f.nom as famille_nom, a.prix_unitaire, a.stock FROM articles a LEFT JOIN familles f ON a.famille_id = f.id";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                Article article = new Article(
-                    rs.getString("ref"),
-                    rs.getString("famille_nom"),
-                    rs.getBigDecimal("prix_unitaire"),
-                    rs.getInt("stock")
-                );
-                articles.add(article);
-            }
-
-        } catch (SQLException e) {
-            throw new RemoteException("Erreur lors de la récupération des articles", e);
-        }
-        return articles;
-    }
-
-    @Override
-    public void synchroniserStock(List<Article> articles) throws RemoteException {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            String sql = "UPDATE articles SET stock = ? WHERE ref = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-
-            for (Article article : articles) {
-                stmt.setInt(1, article.getQuantiteEnStock());
-                stmt.setString(2, article.getReference());
-                stmt.addBatch();
-            }
-
-            stmt.executeBatch();
-            System.out.println("Synchronisation du stock effectuée pour " + articles.size() + " articles");
-
-        } catch (SQLException e) {
-            throw new RemoteException("Erreur lors de la synchronisation du stock", e);
-        }
     }
 
     @Override

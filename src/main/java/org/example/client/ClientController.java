@@ -156,11 +156,9 @@ public class ClientController {
 
     @FXML
     private void consulterArticle() {
-        System.out.println("🖱️ CLIENT: Bouton 'Consulter Stock' cliqué!");
         if (!checkConnection()) return;
         try {
             String reference = referenceCombo.getValue();
-            System.out.println("📝 CLIENT: Référence sélectionnée = '" + reference + "'");
             if (reference == null || reference.isEmpty()) {
                 resultArea.setText("Veuillez sélectionner une référence d'article");
                 return;

@@ -1,6 +1,5 @@
 package org.example.server.siege;
 
-import org.example.common.model.Article;
 import org.example.common.model.Facture;
 import org.example.common.model.LigneFacture;
 import org.example.common.util.DatabaseConnection;
@@ -67,51 +66,6 @@ class SiegeServiceImplTest {
                 "Bug corrigé : ne doit plus utiliser 'reference'");
         assertTrue(sql.getValue().contains("WHERE ref = ?"),
                 "Doit utiliser la colonne 'ref'");
-    }
-
-    // ── getTousLesArticles ───────────────────────────────────────────────────
-
-    @Test
-    void getTousLesArticles_faitLeJoinFamillesEtUtiliseLesCorrectesColonnes() throws Exception {
-        when(mockRs.next()).thenReturn(false);
-        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
-        when(mockConn.prepareStatement(sql.capture())).thenReturn(mockStmt);
-
-        service.getTousLesArticles();
-
-        String requete = sql.getValue();
-        assertTrue(requete.contains("JOIN familles"),
-                "Doit joindre la table familles pour récupérer le nom");
-        assertTrue(requete.contains("a.ref"),
-                "Doit sélectionner 'ref' pas 'reference'");
-        assertTrue(requete.contains("a.stock"),
-                "Doit sélectionner 'stock' pas 'quantite_stock'");
-        assertFalse(requete.contains("a.reference"),
-                "Bug corrigé : ne doit plus utiliser 'reference'");
-        assertFalse(requete.contains("quantite_stock"),
-                "Bug corrigé : ne doit plus utiliser 'quantite_stock'");
-    }
-
-    // ── synchroniserStock ────────────────────────────────────────────────────
-
-    @Test
-    void synchroniserStock_utiliseLesCorrectesColonnes() throws Exception {
-        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
-        when(mockConn.prepareStatement(sql.capture())).thenReturn(mockStmt);
-
-        service.synchroniserStock(List.of(
-                new Article("ART001", "Visserie", new BigDecimal("2.50"), 100)
-        ));
-
-        String requete = sql.getValue();
-        assertTrue(requete.contains("SET stock = ?"),
-                "Doit mettre à jour la colonne 'stock'");
-        assertTrue(requete.contains("WHERE ref = ?"),
-                "Doit filtrer par la colonne 'ref'");
-        assertFalse(requete.contains("quantite_stock"),
-                "Bug corrigé : ne doit plus utiliser 'quantite_stock'");
-        assertFalse(requete.contains("WHERE reference = ?"),
-                "Bug corrigé : ne doit plus utiliser 'reference'");
     }
 
     // ── calculerChiffreAffairesTotal ─────────────────────────────────────────
