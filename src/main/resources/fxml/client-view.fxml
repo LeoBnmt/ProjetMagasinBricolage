@@ -121,8 +121,10 @@
                <VBox styleClass="card" spacing="12.0">
                   <!-- Infos client -->
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
-                     <Label text="Client ID :" styleClass="form-label" minWidth="140.0" />
-                     <TextField fx:id="clientIdVenteField" prefWidth="200.0" promptText="ID du client" />
+                     <Label text="Nom :"    styleClass="form-label" minWidth="80.0" />
+                     <TextField fx:id="nomClientField"    prefWidth="150.0" promptText="Nom de famille" />
+                     <Label text="Prénom :" styleClass="form-label" minWidth="70.0" />
+                     <TextField fx:id="prenomClientField" prefWidth="130.0" promptText="Prénom" />
                      <Label text="Mode de paiement :" styleClass="form-label" minWidth="140.0" />
                      <ComboBox fx:id="modePaiementCombo" prefWidth="180.0" />
                   </HBox>

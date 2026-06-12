@@ -1,6 +1,7 @@
 package org.example.common.rmi;
 
 import org.example.common.model.Article;
+import org.example.common.model.Client;
 import org.example.common.model.Facture;
 import org.example.common.model.Famille;
 import org.example.common.model.LigneFacture;
@@ -15,6 +16,8 @@ import java.util.Map;
 public interface MagasinService extends Remote {
 
     List<Article> getTousLesArticles() throws RemoteException;
+
+    List<Client> getTousLesClients() throws RemoteException;
 
     List<Famille> getToutesLesFamilles() throws RemoteException;
 

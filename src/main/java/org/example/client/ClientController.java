@@ -17,6 +17,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
 import org.example.common.model.Article;
+import org.example.common.model.Client;
 import org.example.common.model.Facture;
 import org.example.common.model.Famille;
 import org.example.common.model.LigneFacture;
@@ -37,7 +38,8 @@ public class ClientController {
     @FXML private ComboBox<Article>  referenceCombo;
     @FXML private ComboBox<Article>  referenceVenteCombo;
     @FXML private ComboBox<Famille>  familleCombo;
-    @FXML private TextField clientIdVenteField;
+    @FXML private TextField nomClientField;
+    @FXML private TextField prenomClientField;
     @FXML private TextField clientIdField;
     @FXML private TextField quantiteField;
     @FXML private ComboBox<String> modePaiementCombo;
@@ -402,13 +404,15 @@ public class ClientController {
             return;
         }
 
-        String clientId     = clientIdVenteField.getText().trim();
+        String nom      = nomClientField.getText().trim();
+        String prenom   = prenomClientField.getText().trim();
         String modePaiement = modePaiementCombo.getValue();
 
-        if (clientId.isEmpty()) {
-            resultArea.setText("Veuillez saisir un ID client.");
+        if (nom.isEmpty() || prenom.isEmpty()) {
+            resultArea.setText("Veuillez saisir le nom et le prénom du client.");
             return;
         }
+        String clientId = nom + " " + prenom;
 
         try {
             Map<String, Integer> panierMap = new LinkedHashMap<>();
@@ -422,7 +426,8 @@ public class ClientController {
                 resultArea.setText("Vente enregistrée — Facture N° " + facture.getId());
                 afficherTicketCaisse(facture);
                 viderPanier();
-                clientIdVenteField.clear();
+                nomClientField.clear();
+                prenomClientField.clear();
             } else {
                 resultArea.setText("Échec : stock insuffisant pour un ou plusieurs articles.");
             }

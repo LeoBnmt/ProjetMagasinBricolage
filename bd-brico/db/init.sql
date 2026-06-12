@@ -18,7 +18,20 @@ CREATE TABLE articles (
     FOREIGN KEY (famille_id) REFERENCES familles(id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom_famille VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL
+) ENGINE=InnoDB;
+
 -- Données de test
+INSERT INTO clients (nom_famille, prenom) VALUES
+    ('Dupont',   'Jean'),
+    ('Martin',   'Marie'),
+    ('Bernard',  'Pierre'),
+    ('Durand',   'Sophie'),
+    ('Lefebvre', 'Paul');
+
 INSERT INTO familles (nom) VALUES
     ('Visserie'),
     ('Peinture'),

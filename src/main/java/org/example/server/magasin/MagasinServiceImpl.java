@@ -1,6 +1,7 @@
 package org.example.server.magasin;
 
 import org.example.common.model.Article;
+import org.example.common.model.Client;
 import org.example.common.model.Facture;
 import org.example.common.model.Famille;
 import org.example.common.model.LigneFacture;
@@ -75,6 +76,23 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
         } catch (SQLException e) {
             throw new RemoteException("Erreur lors de la consultation du stock", e);
         }
+    }
+
+    @Override
+    public List<Client> getTousLesClients() throws RemoteException {
+        List<Client> clients = new ArrayList<>();
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement stmt = conn.prepareStatement(
+                    "SELECT id, nom_famille, prenom FROM clients ORDER BY nom_famille, prenom");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                clients.add(new Client(rs.getInt("id"), rs.getString("nom_famille"), rs.getString("prenom")));
+            }
+        } catch (SQLException e) {
+            throw new RemoteException("Erreur lors de la récupération des clients", e);
+        }
+        return clients;
     }
 
     @Override
