@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import org.example.common.model.Article;
 import org.example.common.model.Facture;
 import org.example.common.rmi.MagasinService;
@@ -16,17 +17,23 @@ import java.util.List;
 
 public class ClientController {
 
+    // --- Champs de formulaire ---
     @FXML private TextField referenceField;
     @FXML private TextField referenceVenteField;
     @FXML private TextField familleField;
+    @FXML private TextField clientIdVenteField;
     @FXML private TextField clientIdField;
     @FXML private TextField quantiteField;
     @FXML private ComboBox<String> modePaiementCombo;
+    @FXML private ComboBox<String> modePaiementFactureCombo;
     @FXML private TextField factureIdField;
     @FXML private TextField stockQuantiteField;
     @FXML private DatePicker datePicker;
 
+    // --- Zone de résultats ---
     @FXML private TextArea resultArea;
+
+    // --- Tables ---
     @FXML private TableView<Article> articleTable;
     @FXML private TableColumn<Article, String> refColumn;
     @FXML private TableColumn<Article, String> familleColumn;
@@ -40,22 +47,32 @@ public class ClientController {
     @FXML private TableColumn<Facture, LocalDate> dateColumn;
     @FXML private TableColumn<Facture, Boolean> payeeColumn;
 
+    // --- Panneaux de navigation (sidebar) ---
+    @FXML private VBox articlesPane;
+    @FXML private VBox ventePane;
+    @FXML private VBox facturationPane;
+    @FXML private VBox statistiquesPane;
+
+    @FXML private Button btnArticles;
+    @FXML private Button btnVente;
+    @FXML private Button btnFacturation;
+    @FXML private Button btnStatistiques;
+
     private MagasinService magasinService;
 
     @FXML
     public void initialize() {
         try {
-            // Connexion au service RMI
             magasinService = (MagasinService) Naming.lookup("rmi://localhost:1099/MagasinService");
 
-            // Configuration des ComboBox
             modePaiementCombo.setItems(FXCollections.observableArrayList("Espèces", "Carte bancaire", "Chèque"));
             modePaiementCombo.setValue("Carte bancaire");
 
-            // Configuration des colonnes de table
+            modePaiementFactureCombo.setItems(FXCollections.observableArrayList("Espèces", "Carte bancaire", "Chèque"));
+            modePaiementFactureCombo.setValue("Carte bancaire");
+
             setupTableColumns();
 
-            // Charger tous les articles au démarrage
             List<Article> articles = magasinService.getTousLesArticles();
             articleTable.setItems(FXCollections.observableArrayList(articles));
 
@@ -66,14 +83,44 @@ public class ClientController {
         }
     }
 
+    // =========================================================
+    //  Navigation sidebar
+    // =========================================================
+
+    @FXML private void showArticles()     { navigateTo(articlesPane,     btnArticles); }
+    @FXML private void showVente()        { navigateTo(ventePane,         btnVente); }
+    @FXML private void showFacturation()  { navigateTo(facturationPane,   btnFacturation); }
+    @FXML private void showStatistiques() { navigateTo(statistiquesPane,  btnStatistiques); }
+
+    private void navigateTo(VBox targetPane, Button activeBtn) {
+        VBox[]    panes   = { articlesPane, ventePane, facturationPane, statistiquesPane };
+        Button[]  buttons = { btnArticles,  btnVente,  btnFacturation,  btnStatistiques };
+
+        for (VBox p : panes) {
+            p.setVisible(false);
+            p.setManaged(false);
+        }
+        for (Button b : buttons) {
+            b.getStyleClass().remove("nav-button-active");
+        }
+
+        targetPane.setVisible(true);
+        targetPane.setManaged(true);
+        if (!activeBtn.getStyleClass().contains("nav-button-active")) {
+            activeBtn.getStyleClass().add("nav-button-active");
+        }
+    }
+
+    // =========================================================
+    //  Colonnes de tables
+    // =========================================================
+
     private void setupTableColumns() {
-        // Table articles
         refColumn.setCellValueFactory(new PropertyValueFactory<>("reference"));
         familleColumn.setCellValueFactory(new PropertyValueFactory<>("famille"));
         prixColumn.setCellValueFactory(new PropertyValueFactory<>("prixUnitaire"));
         stockColumn.setCellValueFactory(new PropertyValueFactory<>("quantiteEnStock"));
 
-        // Table factures
         factureIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         clientColumn.setCellValueFactory(new PropertyValueFactory<>("clientId"));
         totalColumn.setCellValueFactory(new PropertyValueFactory<>("totalFacture"));
@@ -89,6 +136,10 @@ public class ClientController {
         return true;
     }
 
+    // =========================================================
+    //  Actions — Articles
+    // =========================================================
+
     @FXML
     private void consulterArticle() {
         System.out.println("🖱️ CLIENT: Bouton 'Consulter Stock' cliqué!");
@@ -103,8 +154,7 @@ public class ClientController {
 
             Article article = magasinService.consulterStockArticle(reference);
             if (article != null) {
-                ObservableList<Article> data = FXCollections.observableArrayList(article);
-                articleTable.setItems(data);
+                articleTable.setItems(FXCollections.observableArrayList(article));
                 resultArea.setText("Article trouvé: " + article.toString());
             } else {
                 articleTable.setItems(FXCollections.observableArrayList());
@@ -153,10 +203,43 @@ public class ClientController {
     }
 
     @FXML
+    private void ajouterStock() {
+        try {
+            String reference = referenceField.getText().trim();
+            String quantiteStr = stockQuantiteField.getText().trim();
+
+            if (reference.isEmpty() || quantiteStr.isEmpty()) {
+                resultArea.setText("Veuillez saisir la référence et la quantité");
+                return;
+            }
+
+            int quantite = Integer.parseInt(quantiteStr);
+            boolean success = magasinService.ajouterStock(reference, quantite);
+
+            if (success) {
+                resultArea.setText("Stock ajouté avec succès!\nArticle: " + reference +
+                                 "\nQuantité ajoutée: " + quantite);
+                consulterArticle();
+            } else {
+                resultArea.setText("Échec de l'ajout de stock. Article inexistant.");
+            }
+
+        } catch (NumberFormatException e) {
+            resultArea.setText("Quantité invalide.");
+        } catch (Exception e) {
+            resultArea.setText("Erreur lors de l'ajout de stock: " + e.getMessage());
+        }
+    }
+
+    // =========================================================
+    //  Actions — Vente
+    // =========================================================
+
+    @FXML
     private void acheterArticle() {
         if (!checkConnection()) return;
         try {
-            String clientId = clientIdField.getText().trim();
+            String clientId = clientIdVenteField.getText().trim();
             String reference = referenceVenteField.getText().trim();
             String quantiteStr = quantiteField.getText().trim();
             String modePaiement = modePaiementCombo.getValue();
@@ -174,9 +257,6 @@ public class ClientController {
                                  "\nArticle: " + reference +
                                  "\nQuantité: " + quantite +
                                  "\nMode de paiement: " + modePaiement);
-
-                // Rafraîchir l'affichage de l'article
-                consulterArticle();
             } else {
                 resultArea.setText("Échec de l'achat. Stock insuffisant ou article inexistant.");
             }
@@ -187,6 +267,10 @@ public class ClientController {
             resultArea.setText("Erreur lors de l'achat: " + e.getMessage());
         }
     }
+
+    // =========================================================
+    //  Actions — Facturation
+    // =========================================================
 
     @FXML
     private void consulterFacture() {
@@ -202,8 +286,7 @@ public class ClientController {
             Facture facture = magasinService.consulterFacture(factureId);
 
             if (facture != null) {
-                ObservableList<Facture> data = FXCollections.observableArrayList(facture);
-                factureTable.setItems(data);
+                factureTable.setItems(FXCollections.observableArrayList(facture));
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("=== FACTURE N° ").append(facture.getId()).append(" ===\n");
@@ -241,7 +324,7 @@ public class ClientController {
         if (!checkConnection()) return;
         try {
             String factureIdStr = factureIdField.getText().trim();
-            String modePaiement = modePaiementCombo.getValue();
+            String modePaiement = modePaiementFactureCombo.getValue();
 
             if (factureIdStr.isEmpty()) {
                 resultArea.setText("Veuillez saisir un ID de facture");
@@ -254,8 +337,6 @@ public class ClientController {
             if (success) {
                 resultArea.setText("Paiement effectué avec succès!\nFacture N° " + factureId +
                                  "\nMode de paiement: " + modePaiement);
-
-                // Rafraîchir l'affichage de la facture
                 consulterFacture();
             } else {
                 resultArea.setText("Échec du paiement. Facture introuvable.");
@@ -265,54 +346,6 @@ public class ClientController {
             resultArea.setText("ID de facture invalide.");
         } catch (Exception e) {
             resultArea.setText("Erreur lors du paiement: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void ajouterStock() {
-        try {
-            String reference = referenceField.getText().trim();
-            String quantiteStr = stockQuantiteField.getText().trim();
-
-            if (reference.isEmpty() || quantiteStr.isEmpty()) {
-                resultArea.setText("Veuillez saisir la référence et la quantité");
-                return;
-            }
-
-            int quantite = Integer.parseInt(quantiteStr);
-            boolean success = magasinService.ajouterStock(reference, quantite);
-
-            if (success) {
-                resultArea.setText("Stock ajouté avec succès!\nArticle: " + reference +
-                                 "\nQuantité ajoutée: " + quantite);
-
-                // Rafraîchir l'affichage de l'article
-                consulterArticle();
-            } else {
-                resultArea.setText("Échec de l'ajout de stock. Article inexistant.");
-            }
-
-        } catch (NumberFormatException e) {
-            resultArea.setText("Quantité invalide.");
-        } catch (Exception e) {
-            resultArea.setText("Erreur lors de l'ajout de stock: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void calculerChiffreAffaires() {
-        try {
-            LocalDate date = datePicker.getValue();
-            if (date == null) {
-                resultArea.setText("Veuillez sélectionner une date");
-                return;
-            }
-
-            BigDecimal chiffre = magasinService.calculerChiffreAffaires(date);
-            resultArea.setText("Chiffre d'affaires du " + date + ": " + chiffre + "€");
-
-        } catch (Exception e) {
-            resultArea.setText("Erreur lors du calcul du chiffre d'affaires: " + e.getMessage());
         }
     }
 
@@ -327,8 +360,7 @@ public class ClientController {
 
             List<Facture> factures = magasinService.getFacturesClient(clientId);
             if (!factures.isEmpty()) {
-                ObservableList<Facture> data = FXCollections.observableArrayList(factures);
-                factureTable.setItems(data);
+                factureTable.setItems(FXCollections.observableArrayList(factures));
 
                 BigDecimal totalDu = factures.stream()
                     .filter(f -> !f.isPayee())
@@ -345,6 +377,27 @@ public class ClientController {
 
         } catch (Exception e) {
             resultArea.setText("Erreur lors de la consultation des factures client: " + e.getMessage());
+        }
+    }
+
+    // =========================================================
+    //  Actions — Statistiques
+    // =========================================================
+
+    @FXML
+    private void calculerChiffreAffaires() {
+        try {
+            LocalDate date = datePicker.getValue();
+            if (date == null) {
+                resultArea.setText("Veuillez sélectionner une date");
+                return;
+            }
+
+            BigDecimal chiffre = magasinService.calculerChiffreAffaires(date);
+            resultArea.setText("Chiffre d'affaires du " + date + ": " + chiffre + "€");
+
+        } catch (Exception e) {
+            resultArea.setText("Erreur lors du calcul du chiffre d'affaires: " + e.getMessage());
         }
     }
 }

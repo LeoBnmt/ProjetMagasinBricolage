@@ -12,7 +12,7 @@ public class ClientApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(ClientApplication.class.getResource("/fxml/client-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+        Scene scene = new Scene(fxmlLoader.load(), 1050, 700);
         stage.setTitle("Brico-Merlin - Point de Vente");
         stage.setScene(scene);
         stage.show();

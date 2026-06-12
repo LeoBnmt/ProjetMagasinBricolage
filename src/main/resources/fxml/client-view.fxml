@@ -4,141 +4,216 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
+<?import javafx.scene.shape.Rectangle?>
 
-<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.client.ClientController">
-   <top>
-      <Label styleClass="title" text="Brico-Merlin - Point de Vente" BorderPane.alignment="CENTER">
-         <font>
-            <Font name="System Bold" size="24.0" />
-         </font>
-         <BorderPane.margin>
-            <Insets bottom="20.0" top="10.0" />
-         </BorderPane.margin>
-      </Label>
-   </top>
+<BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="org.example.client.ClientController"
+            stylesheets="@../css/style.css">
+
+   <!-- ===================================================
+        SIDEBAR
+        =================================================== -->
+   <left>
+      <VBox styleClass="sidebar" minHeight="600.0">
+
+         <!-- Logo / Marque -->
+         <VBox spacing="2.0">
+            <padding><Insets top="24.0" right="20.0" bottom="20.0" left="20.0" /></padding>
+            <Label text="BRICO-MERLIN" styleClass="sidebar-brand" />
+            <Label text="Point de Vente"     styleClass="sidebar-version" />
+         </VBox>
+
+         <!-- Séparateur -->
+         <Region styleClass="sidebar-separator" />
+
+         <!-- Libellé section -->
+         <Label text="NAVIGATION" styleClass="nav-section-label">
+            <VBox.margin><Insets top="16.0" right="20.0" bottom="6.0" left="20.0" /></VBox.margin>
+         </Label>
+
+         <!-- Boutons de navigation -->
+         <Button fx:id="btnArticles"
+                 text="  Articles"
+                 styleClass="nav-button,nav-button-active"
+                 onAction="#showArticles"
+                 maxWidth="Infinity" />
+
+         <Button fx:id="btnVente"
+                 text="  Vente"
+                 styleClass="nav-button"
+                 onAction="#showVente"
+                 maxWidth="Infinity" />
+
+         <Button fx:id="btnFacturation"
+                 text="  Facturation"
+                 styleClass="nav-button"
+                 onAction="#showFacturation"
+                 maxWidth="Infinity" />
+
+         <Button fx:id="btnStatistiques"
+                 text="  Statistiques"
+                 styleClass="nav-button"
+                 onAction="#showStatistiques"
+                 maxWidth="Infinity" />
+
+         <!-- Espace bas de sidebar -->
+         <Region VBox.vgrow="ALWAYS" />
+      </VBox>
+   </left>
+
+   <!-- ===================================================
+        ZONE CENTRALE  (pages + console)
+        =================================================== -->
    <center>
-      <TabPane>
-         <Tab text="Gestion Articles">
-            <VBox spacing="10.0">
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
+      <VBox>
 
-               <HBox spacing="10.0">
-                  <Label text="Référence:" />
-                  <TextField fx:id="referenceField" prefWidth="150.0" />
-                  <Button onAction="#consulterArticle" text="Consulter Stock" />
-               </HBox>
+         <!-- Pages empilées -->
+         <StackPane VBox.vgrow="ALWAYS">
 
-               <HBox spacing="10.0">
-                  <Label text="Famille:" />
-                  <TextField fx:id="familleField" prefWidth="150.0" />
-                  <Button onAction="#rechercherParFamille" text="Rechercher par Famille" />
-               </HBox>
+            <!-- ARTICLES -->
+            <VBox fx:id="articlesPane"
+                  styleClass="content-area"
+                  spacing="16.0"
+                  maxWidth="Infinity" maxHeight="Infinity">
 
-               <HBox spacing="10.0">
-                  <Label text="Ajouter Stock:" />
-                  <TextField fx:id="stockQuantiteField" prefWidth="100.0" promptText="Quantité" />
-                  <Button onAction="#ajouterStock" text="Ajouter Stock" />
-               </HBox>
+               <Label text="Gestion des Articles" styleClass="section-title" />
 
-               <TableView fx:id="articleTable" prefHeight="200.0">
+               <VBox styleClass="card" spacing="12.0">
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="Référence :" styleClass="form-label" minWidth="140.0" />
+                     <TextField fx:id="referenceField" prefWidth="190.0" promptText="ex : ART001" />
+                     <Button onAction="#consulterArticle" text="Consulter Stock" styleClass="btn-primary" />
+                  </HBox>
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="Famille :" styleClass="form-label" minWidth="140.0" />
+                     <TextField fx:id="familleField" prefWidth="190.0" promptText="ex : Peinture" />
+                     <Button onAction="#rechercherParFamille" text="Rechercher par Famille" styleClass="btn-primary" />
+                  </HBox>
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="Ajouter stock :" styleClass="form-label" minWidth="140.0" />
+                     <TextField fx:id="stockQuantiteField" prefWidth="120.0" promptText="Quantité" />
+                     <Button onAction="#ajouterStock" text="Ajouter Stock" styleClass="btn-success" />
+                  </HBox>
+               </VBox>
+
+               <TableView fx:id="articleTable" VBox.vgrow="ALWAYS" maxWidth="Infinity">
                   <columns>
-                     <TableColumn fx:id="refColumn" text="Référence" />
-                     <TableColumn fx:id="familleColumn" text="Famille" />
-                     <TableColumn fx:id="prixColumn" text="Prix Unitaire" />
-                     <TableColumn fx:id="stockColumn" text="Stock" />
+                     <TableColumn fx:id="refColumn"     text="Référence"     prefWidth="160.0" />
+                     <TableColumn fx:id="familleColumn" text="Famille"       prefWidth="160.0" />
+                     <TableColumn fx:id="prixColumn"    text="Prix unitaire" prefWidth="160.0" />
+                     <TableColumn fx:id="stockColumn"   text="Stock"         prefWidth="100.0" />
                   </columns>
                </TableView>
             </VBox>
-         </Tab>
 
-         <Tab text="Vente">
-            <VBox spacing="10.0">
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
+            <!-- VENTE -->
+            <VBox fx:id="ventePane"
+                  styleClass="content-area"
+                  spacing="16.0"
+                  visible="false" managed="false"
+                  maxWidth="Infinity" maxHeight="Infinity">
 
-               <GridPane hgap="10.0" vgap="10.0">
-                  <columnConstraints>
-                     <ColumnConstraints />
-                     <ColumnConstraints />
-                     <ColumnConstraints />
-                  </columnConstraints>
-                  <rowConstraints>
-                     <RowConstraints />
-                     <RowConstraints />
-                     <RowConstraints />
-                  </rowConstraints>
+               <Label text="Nouvelle Vente" styleClass="section-title" />
 
-                  <Label text="Client ID:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                  <TextField fx:id="clientIdField" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+               <VBox styleClass="card" spacing="16.0">
+                  <GridPane hgap="16.0" vgap="14.0">
+                     <columnConstraints>
+                        <ColumnConstraints minWidth="140.0" />
+                        <ColumnConstraints prefWidth="210.0" hgrow="ALWAYS" />
+                        <ColumnConstraints minWidth="140.0" />
+                        <ColumnConstraints prefWidth="210.0" hgrow="ALWAYS" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="36.0" />
+                        <RowConstraints minHeight="36.0" />
+                     </rowConstraints>
 
-                  <Label text="Référence Article:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                  <TextField fx:id="referenceVenteField" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     <Label text="Client ID :"           styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                     <TextField fx:id="clientIdVenteField" prefWidth="210.0" promptText="ID du client"  GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                  <Label text="Quantité:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                  <TextField fx:id="quantiteField" prefWidth="100.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                     <Label text="Mode de paiement :"    styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                     <ComboBox fx:id="modePaiementCombo" prefWidth="210.0"                              GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-                  <Label text="Mode Paiement:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                  <ComboBox fx:id="modePaiementCombo" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                     <Label text="Référence article :"   styleClass="form-label" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                     <TextField fx:id="referenceVenteField" prefWidth="210.0" promptText="ex : ART001"  GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                  <Button onAction="#acheterArticle" text="Effectuer Achat" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-               </GridPane>
+                     <Label text="Quantité :"            styleClass="form-label" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                     <TextField fx:id="quantiteField"    prefWidth="120.0"       promptText="1"          GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                  </GridPane>
+
+                  <HBox alignment="CENTER_RIGHT">
+                     <Button onAction="#acheterArticle" text="Effectuer l'Achat" styleClass="btn-success" />
+                  </HBox>
+               </VBox>
             </VBox>
-         </Tab>
 
-         <Tab text="Facturation">
-            <VBox spacing="10.0">
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
+            <!-- FACTURATION -->
+            <VBox fx:id="facturationPane"
+                  styleClass="content-area"
+                  spacing="16.0"
+                  visible="false" managed="false"
+                  maxWidth="Infinity" maxHeight="Infinity">
 
-               <HBox spacing="10.0">
-                  <Label text="ID Facture:" />
-                  <TextField fx:id="factureIdField" prefWidth="100.0" />
-                  <Button onAction="#consulterFacture" text="Consulter Facture" />
-                  <Button onAction="#payerFacture" text="Payer Facture" />
-               </HBox>
+               <Label text="Facturation" styleClass="section-title" />
 
-               <HBox spacing="10.0">
-                  <Label text="Client ID:" />
-                  <TextField fx:id="clientIdField" prefWidth="150.0" />
-                  <Button onAction="#voirFacturesClient" text="Voir Factures Client" />
-               </HBox>
+               <VBox styleClass="card" spacing="12.0">
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="ID Facture :"    styleClass="form-label" minWidth="140.0" />
+                     <TextField fx:id="factureIdField"       prefWidth="140.0" promptText="ID de la facture" />
+                     <Button onAction="#consulterFacture"    text="Consulter"         styleClass="btn-primary" />
+                     <ComboBox fx:id="modePaiementFactureCombo" prefWidth="180.0" />
+                     <Button onAction="#payerFacture"        text="Payer la Facture"  styleClass="btn-success" />
+                  </HBox>
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="Client ID :"     styleClass="form-label" minWidth="140.0" />
+                     <TextField fx:id="clientIdField"        prefWidth="160.0" promptText="ID du client" />
+                     <Button onAction="#voirFacturesClient"  text="Voir Factures Client" styleClass="btn-primary" />
+                  </HBox>
+               </VBox>
 
-               <TableView fx:id="factureTable" prefHeight="200.0">
+               <TableView fx:id="factureTable" VBox.vgrow="ALWAYS" maxWidth="Infinity">
                   <columns>
-                     <TableColumn fx:id="factureIdColumn" text="ID" />
-                     <TableColumn fx:id="clientColumn" text="Client" />
-                     <TableColumn fx:id="totalColumn" text="Total" />
-                     <TableColumn fx:id="dateColumn" text="Date" />
-                     <TableColumn fx:id="payeeColumn" text="Payée" />
+                     <TableColumn fx:id="factureIdColumn" text="ID"      prefWidth="70.0" />
+                     <TableColumn fx:id="clientColumn"    text="Client"  prefWidth="120.0" />
+                     <TableColumn fx:id="totalColumn"     text="Total"   prefWidth="120.0" />
+                     <TableColumn fx:id="dateColumn"      text="Date"    prefWidth="140.0" />
+                     <TableColumn fx:id="payeeColumn"     text="Payée"   prefWidth="90.0" />
                   </columns>
                </TableView>
             </VBox>
-         </Tab>
 
-         <Tab text="Statistiques">
-            <VBox spacing="10.0">
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
+            <!-- STATISTIQUES -->
+            <VBox fx:id="statistiquesPane"
+                  styleClass="content-area"
+                  spacing="16.0"
+                  visible="false" managed="false"
+                  maxWidth="Infinity" maxHeight="Infinity">
 
-               <HBox spacing="10.0">
-                  <Label text="Date:" />
-                  <DatePicker fx:id="datePicker" />
-                  <Button onAction="#calculerChiffreAffaires" text="Calculer Chiffre d'Affaires" />
-               </HBox>
+               <Label text="Statistiques" styleClass="section-title" />
+
+               <VBox styleClass="card" spacing="12.0">
+                  <HBox spacing="12.0" alignment="CENTER_LEFT">
+                     <Label text="Date :" styleClass="form-label" minWidth="140.0" />
+                     <DatePicker fx:id="datePicker" />
+                     <Button onAction="#calculerChiffreAffaires" text="Calculer le Chiffre d'Affaires" styleClass="btn-primary" />
+                  </HBox>
+               </VBox>
             </VBox>
-         </Tab>
-      </TabPane>
+
+         </StackPane>
+
+         <!-- Console (toujours visible en bas) -->
+         <VBox styleClass="result-section" spacing="5.0">
+            <Label text="CONSOLE" styleClass="result-label" />
+            <TextArea fx:id="resultArea"
+                      styleClass="result-area"
+                      prefHeight="100.0"
+                      wrapText="true"
+                      editable="false" />
+         </VBox>
+
+      </VBox>
    </center>
 
-   <bottom>
-      <VBox>
-         <Label text="Résultats:" />
-         <TextArea fx:id="resultArea" prefHeight="150.0" wrapText="true" editable="false" />
-      </VBox>
-   </bottom>
 </BorderPane>
