@@ -25,7 +25,7 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
     public void mettreAJourPrix(Map<String, BigDecimal> nouveauPrix) throws RemoteException {
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
-            String sql = "UPDATE articles SET prix_unitaire = ? WHERE reference = ?";
+            String sql = "UPDATE articles SET prix_unitaire = ? WHERE ref = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
             for (Map.Entry<String, BigDecimal> entry : nouveauPrix.entrySet()) {
@@ -55,27 +55,25 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
                 }
 
                 // Insérer la facture
-                String insertFactureSql = "INSERT INTO factures (id, client_id, total_facture, mode_paiement, date_facturation, payee) VALUES (?, ?, ?, ?, ?, ?)";
+                String insertFactureSql = "INSERT INTO factures (id, client_id, total, mode_paiement, date_facturation, statut) VALUES (?, ?, ?, ?, ?, ?)";
                 PreparedStatement factureStmt = conn.prepareStatement(insertFactureSql);
                 factureStmt.setLong(1, facture.getId());
                 factureStmt.setString(2, facture.getClientId());
                 factureStmt.setBigDecimal(3, facture.getTotalFacture());
                 factureStmt.setString(4, facture.getModePaiement());
                 factureStmt.setDate(5, Date.valueOf(facture.getDateFacturation()));
-                factureStmt.setBoolean(6, facture.isPayee());
+                factureStmt.setString(6, facture.isPayee() ? "payee" : "en_attente");
                 factureStmt.executeUpdate();
 
                 // Insérer les lignes de facture
-                String insertLigneSql = "INSERT INTO lignes_facture (facture_id, reference_article, nom_article, quantite, prix_unitaire, sous_total) VALUES (?, ?, ?, ?, ?, ?)";
+                String insertLigneSql = "INSERT INTO lignes_facture (facture_id, ref_article, quantite, prix_unitaire) VALUES (?, ?, ?, ?)";
                 PreparedStatement ligneStmt = conn.prepareStatement(insertLigneSql);
 
                 for (LigneFacture ligne : facture.getLignes()) {
                     ligneStmt.setLong(1, facture.getId());
                     ligneStmt.setString(2, ligne.getReferenceArticle());
-                    ligneStmt.setString(3, ligne.getNomArticle());
-                    ligneStmt.setInt(4, ligne.getQuantite());
-                    ligneStmt.setBigDecimal(5, ligne.getPrixUnitaire());
-                    ligneStmt.setBigDecimal(6, ligne.getSousTotal());
+                    ligneStmt.setInt(3, ligne.getQuantite());
+                    ligneStmt.setBigDecimal(4, ligne.getPrixUnitaire());
                     ligneStmt.addBatch();
                 }
                 ligneStmt.executeBatch();
@@ -104,16 +102,16 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
         List<Article> articles = new ArrayList<>();
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
-            String sql = "SELECT * FROM articles";
+            String sql = "SELECT a.ref, f.nom as famille_nom, a.prix_unitaire, a.stock FROM articles a LEFT JOIN familles f ON a.famille_id = f.id";
             PreparedStatement stmt = conn.prepareStatement(sql);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 Article article = new Article(
-                    rs.getString("reference"),
-                    rs.getString("famille"),
+                    rs.getString("ref"),
+                    rs.getString("famille_nom"),
                     rs.getBigDecimal("prix_unitaire"),
-                    rs.getInt("quantite_stock")
+                    rs.getInt("stock")
                 );
                 articles.add(article);
             }
@@ -128,7 +126,7 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
     public void synchroniserStock(List<Article> articles) throws RemoteException {
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
-            String sql = "UPDATE articles SET quantite_stock = ? WHERE reference = ?";
+            String sql = "UPDATE articles SET stock = ? WHERE ref = ?";
             PreparedStatement stmt = conn.prepareStatement(sql);
 
             for (Article article : articles) {
@@ -149,7 +147,7 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
     public BigDecimal calculerChiffreAffairesTotal(LocalDate date) throws RemoteException {
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
-            String sql = "SELECT SUM(total_facture) as chiffre_total FROM factures WHERE date_facturation = ? AND payee = TRUE";
+            String sql = "SELECT SUM(total) as chiffre_total FROM factures WHERE date_facturation = ? AND statut = 'payee'";
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setDate(1, Date.valueOf(date));
             ResultSet rs = stmt.executeQuery();

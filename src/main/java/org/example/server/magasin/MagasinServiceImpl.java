@@ -13,6 +13,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinService {
 
@@ -246,6 +247,48 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
         } catch (SQLException e) {
             throw new RemoteException("Erreur lors de l'ajout de stock", e);
         }
+    }
+
+    @Override
+    public void recevoirMiseAJourPrix(Map<String, BigDecimal> nouveauxPrix) throws RemoteException {
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            String sql = "UPDATE articles SET prix_unitaire = ? WHERE ref = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            for (Map.Entry<String, BigDecimal> entry : nouveauxPrix.entrySet()) {
+                stmt.setBigDecimal(1, entry.getValue());
+                stmt.setString(2, entry.getKey());
+                stmt.addBatch();
+            }
+
+            int[] resultats = stmt.executeBatch();
+            System.out.println("Prix reçus du siège : " + resultats.length + " article(s) mis à jour");
+
+        } catch (SQLException e) {
+            throw new RemoteException("Erreur lors de la mise à jour des prix reçus du siège", e);
+        }
+    }
+
+    @Override
+    public List<Facture> getToutesLesFactures() throws RemoteException {
+        List<Facture> factures = new ArrayList<>();
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            String sql = "SELECT id FROM factures";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Facture facture = consulterFacture(rs.getLong("id"));
+                if (facture != null) {
+                    factures.add(facture);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RemoteException("Erreur lors de la récupération de toutes les factures", e);
+        }
+        return factures;
     }
 
     @Override

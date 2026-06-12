@@ -9,6 +9,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface MagasinService extends Remote {
 
@@ -29,4 +30,8 @@ public interface MagasinService extends Remote {
     boolean ajouterStock(String referenceArticle, int quantite) throws RemoteException;
 
     BigDecimal calculerChiffreAffaires(LocalDate date) throws RemoteException;
+
+    void recevoirMiseAJourPrix(Map<String, BigDecimal> nouveauxPrix) throws RemoteException;
+
+    List<Facture> getToutesLesFactures() throws RemoteException;
 }

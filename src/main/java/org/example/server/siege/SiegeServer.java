@@ -1,76 +1,117 @@
 package org.example.server.siege;
 
+import org.example.common.model.Facture;
+import org.example.common.rmi.MagasinService;
 import org.example.common.rmi.SiegeService;
 
 import java.math.BigDecimal;
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
-import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class SiegeServer {
-    private static SiegeService service;
+
+    private static SiegeService siegeService;
+    private static MagasinService magasinService;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
     public static void main(String[] args) {
         try {
-            // Créer le registre RMI sur le port 1098
+            // Démarrer le registre RMI du siège sur le port 1098
             LocateRegistry.createRegistry(1098);
+            siegeService = new SiegeServiceImpl();
+            Naming.rebind("rmi://localhost:1098/SiegeService", siegeService);
+            System.out.println("Serveur Siège démarré sur rmi://localhost:1098/SiegeService");
 
-            // Créer l'instance du service
-            service = new SiegeServiceImpl();
+            // Se connecter au serveur Magasin via RMI (il doit être démarré avant)
+            magasinService = connecterAuMagasin();
 
-            // Enregistrer le service dans le registre RMI
-            Naming.rebind("rmi://localhost:1098/SiegeService", service);
-
-            System.out.println("Serveur Siège démarré et en attente de connexions...");
-            System.out.println("Service disponible à: rmi://localhost:1098/SiegeService");
-
-            // Programmer les tâches automatisées
+            // Lancer les tâches automatisées
             programmerTachesAutomatisees();
 
         } catch (Exception e) {
-            System.err.println("Erreur lors du démarrage du serveur siège:");
+            System.err.println("Erreur lors du démarrage du serveur siège :");
             e.printStackTrace();
         }
     }
 
-    private static void programmerTachesAutomatisees() {
-        // Mise à jour des prix tous les matins à 8h (simulé toutes les minutes pour le test)
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                System.out.println("Mise à jour automatique des prix...");
-                Map<String, BigDecimal> nouveauPrix = genererNouveauxPrix();
-                service.mettreAJourPrix(nouveauPrix);
-                System.out.println("Mise à jour des prix terminée");
-            } catch (Exception e) {
-                System.err.println("Erreur lors de la mise à jour automatique des prix: " + e.getMessage());
-            }
-        }, 1, 60, TimeUnit.MINUTES);
+    private static MagasinService connecterAuMagasin() {
+        try {
+            MagasinService service = (MagasinService) Naming.lookup("rmi://localhost:1099/MagasinService");
+            System.out.println("Connecté au serveur Magasin (rmi://localhost:1099/MagasinService)");
+            return service;
+        } catch (Exception e) {
+            System.err.println("Impossible de se connecter au serveur Magasin : " + e.getMessage());
+            System.err.println("Les tâches automatisées seront ignorées jusqu'à reconnexion.");
+            return null;
+        }
+    }
 
-        // Sauvegarde des factures tous les soirs à 22h (simulé toutes les 30 secondes pour le test)
+    private static void programmerTachesAutomatisees() {
+        // Mise à jour des prix toutes les heures (simule la mise à jour du matin)
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                System.out.println("Sauvegarde automatique des factures...");
-                // En réalité, il faudrait récupérer les factures des magasins via RMI
-                System.out.println("Sauvegarde des factures terminée");
+                if (magasinService == null) {
+                    magasinService = connecterAuMagasin();
+                    if (magasinService == null) return;
+                }
+
+                System.out.println("\n[SIÈGE → MAGASIN] Envoi des nouveaux prix...");
+                Map<String, BigDecimal> nouveauxPrix = genererNouveauxPrix();
+
+                // 1. Mettre à jour dans la BD du siège
+                siegeService.mettreAJourPrix(nouveauxPrix);
+
+                // 2. Pousser les nouveaux prix au serveur Magasin via RMI
+                magasinService.recevoirMiseAJourPrix(nouveauxPrix);
+
+                System.out.println("[SIÈGE → MAGASIN] " + nouveauxPrix.size() + " prix transmis avec succès.");
+
             } catch (Exception e) {
-                System.err.println("Erreur lors de la sauvegarde automatique: " + e.getMessage());
+                System.err.println("Erreur lors de la mise à jour des prix : " + e.getMessage());
+                magasinService = null; // forcer la reconnexion au prochain tour
+            }
+        }, 0, 60, TimeUnit.MINUTES);
+
+        // Sauvegarde des factures toutes les 30 secondes (simule la sauvegarde du soir)
+        scheduler.scheduleAtFixedRate(() -> {
+            try {
+                if (magasinService == null) {
+                    magasinService = connecterAuMagasin();
+                    if (magasinService == null) return;
+                }
+
+                System.out.println("\n[MAGASIN → SIÈGE] Récupération des factures pour sauvegarde...");
+
+                // 1. Récupérer toutes les factures du Magasin via RMI
+                List<Facture> factures = magasinService.getToutesLesFactures();
+
+                // 2. Les sauvegarder côté siège
+                siegeService.sauvegarderFactures(factures);
+
+                System.out.println("[MAGASIN → SIÈGE] " + factures.size() + " facture(s) sauvegardée(s).");
+
+            } catch (Exception e) {
+                System.err.println("Erreur lors de la sauvegarde des factures : " + e.getMessage());
+                magasinService = null; // forcer la reconnexion au prochain tour
             }
         }, 30, 30, TimeUnit.SECONDS);
     }
 
     private static Map<String, BigDecimal> genererNouveauxPrix() {
-        // Simulation de nouveaux prix (en réalité, ils viendraient d'une source externe)
-        Map<String, BigDecimal> nouveauPrix = new HashMap<>();
-        nouveauPrix.put("VIS001", new BigDecimal("0.16"));
-        nouveauPrix.put("VIS002", new BigDecimal("0.26"));
-        nouveauPrix.put("MAR001", new BigDecimal("16.50"));
-        nouveauPrix.put("MAR002", new BigDecimal("26.00"));
-        return nouveauPrix;
+        // En production, ces prix viendraient d'une source externe (ERP, fichier, API...)
+        Map<String, BigDecimal> prix = new HashMap<>();
+        prix.put("ART001", new BigDecimal("2.60"));
+        prix.put("ART002", new BigDecimal("1.25"));
+        prix.put("ART003", new BigDecimal("15.50"));
+        prix.put("ART004", new BigDecimal("51.99"));
+        prix.put("ART005", new BigDecimal("9.00"));
+        prix.put("ART006", new BigDecimal("13.00"));
+        return prix;
     }
 }
