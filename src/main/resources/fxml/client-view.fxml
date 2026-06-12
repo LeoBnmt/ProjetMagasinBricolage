@@ -166,11 +166,10 @@
 
                <VBox styleClass="card" spacing="12.0">
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
-                     <Label text="ID Facture :"    styleClass="form-label" minWidth="140.0" />
-                     <TextField fx:id="factureIdField"       prefWidth="140.0" promptText="ID de la facture" />
-                     <Button onAction="#consulterFacture"    text="Consulter"         styleClass="btn-primary" />
-                     <ComboBox fx:id="modePaiementFactureCombo" prefWidth="180.0" />
-                     <Button onAction="#payerFacture"        text="Payer la Facture"  styleClass="btn-success" />
+                     <Label text="N° Facture :"    styleClass="form-label" minWidth="140.0" />
+                     <TextField fx:id="factureIdField"      prefWidth="140.0" promptText="ID de la facture" />
+                     <Button onAction="#consulterFacture"          text="Consulter"             styleClass="btn-primary" />
+                     <Button onAction="#chargerToutesLesFactures"  text="Voir toutes"            styleClass="btn-primary" />
                   </HBox>
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
                      <Label text="Client ID :"     styleClass="form-label" minWidth="140.0" />
@@ -181,11 +180,12 @@
 
                <TableView fx:id="factureTable" VBox.vgrow="ALWAYS" maxWidth="Infinity">
                   <columns>
-                     <TableColumn fx:id="factureIdColumn" text="ID"      prefWidth="70.0" />
-                     <TableColumn fx:id="clientColumn"    text="Client"  prefWidth="120.0" />
-                     <TableColumn fx:id="totalColumn"     text="Total"   prefWidth="120.0" />
-                     <TableColumn fx:id="dateColumn"      text="Date"    prefWidth="140.0" />
-                     <TableColumn fx:id="payeeColumn"     text="Payée"   prefWidth="90.0" />
+                     <TableColumn fx:id="factureIdColumn"    text="ID"               prefWidth="60.0" />
+                     <TableColumn fx:id="clientColumn"       text="Client"           prefWidth="110.0" />
+                     <TableColumn fx:id="totalColumn"        text="Total"            prefWidth="100.0" />
+                     <TableColumn fx:id="dateColumn"         text="Date"             prefWidth="120.0" />
+                     <TableColumn fx:id="modePaiementColumn" text="Mode paiement"    prefWidth="130.0" />
+                     <TableColumn fx:id="payeeColumn"        text="Payée"            prefWidth="70.0" />
                   </columns>
                </TableView>
             </VBox>

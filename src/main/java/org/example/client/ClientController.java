@@ -30,7 +30,6 @@ public class ClientController {
     @FXML private TextField clientIdField;
     @FXML private TextField quantiteField;
     @FXML private ComboBox<String> modePaiementCombo;
-    @FXML private ComboBox<String> modePaiementFactureCombo;
     @FXML private TextField factureIdField;
     @FXML private TextField stockQuantiteField;
     @FXML private DatePicker datePicker;
@@ -61,6 +60,7 @@ public class ClientController {
     @FXML private TableColumn<Facture, String>     clientColumn;
     @FXML private TableColumn<Facture, BigDecimal> totalColumn;
     @FXML private TableColumn<Facture, LocalDate>  dateColumn;
+    @FXML private TableColumn<Facture, String>     modePaiementColumn;
     @FXML private TableColumn<Facture, Boolean>    payeeColumn;
 
     // --- Panneaux de navigation ---
@@ -84,9 +84,6 @@ public class ClientController {
 
             modePaiementCombo.setItems(FXCollections.observableArrayList("Espèces", "Carte bancaire", "Chèque"));
             modePaiementCombo.setValue("Carte bancaire");
-
-            modePaiementFactureCombo.setItems(FXCollections.observableArrayList("Espèces", "Carte bancaire", "Chèque"));
-            modePaiementFactureCombo.setValue("Carte bancaire");
 
             setupTableColumns();
 
@@ -178,7 +175,15 @@ public class ClientController {
         clientColumn.setCellValueFactory(new PropertyValueFactory<>("clientId"));
         totalColumn.setCellValueFactory(new PropertyValueFactory<>("totalFacture"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("dateFacturation"));
+        modePaiementColumn.setCellValueFactory(new PropertyValueFactory<>("modePaiement"));
         payeeColumn.setCellValueFactory(new PropertyValueFactory<>("payee"));
+        payeeColumn.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Boolean val, boolean empty) {
+                super.updateItem(val, empty);
+                setText(empty || val == null ? null : val ? "Oui" : "Non");
+            }
+        });
         factureTable.setPlaceholder(new Label("Aucune facture disponible"));
 
         // Clic sur une facture → afficher son détail dans la console
@@ -197,6 +202,7 @@ public class ClientController {
         return true;
     }
 
+    @FXML
     private void chargerToutesLesFactures() {
         if (!checkConnection()) return;
         try {
@@ -438,7 +444,7 @@ public class ClientController {
         try {
             String factureIdStr = factureIdField.getText().trim();
             if (factureIdStr.isEmpty()) {
-                resultArea.setText("Veuillez saisir un ID de facture");
+                resultArea.setText("Veuillez saisir un numéro de facture");
                 return;
             }
 
@@ -450,42 +456,13 @@ public class ClientController {
                 afficherDetailFacture(facture);
             } else {
                 factureTable.setItems(FXCollections.observableArrayList());
-                resultArea.setText("Aucune facture trouvée avec l'ID : " + factureId);
+                resultArea.setText("Aucune facture trouvée avec le numéro : " + factureId);
             }
 
         } catch (NumberFormatException e) {
-            resultArea.setText("ID de facture invalide.");
+            resultArea.setText("Numéro de facture invalide.");
         } catch (Exception e) {
-            resultArea.setText("Erreur lors de la consultation: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void payerFacture() {
-        if (!checkConnection()) return;
-        try {
-            String factureIdStr = factureIdField.getText().trim();
-            String modePaiement = modePaiementFactureCombo.getValue();
-
-            if (factureIdStr.isEmpty()) {
-                resultArea.setText("Veuillez saisir un ID de facture");
-                return;
-            }
-
-            Long factureId = Long.parseLong(factureIdStr);
-            boolean success = magasinService.payerFacture(factureId, modePaiement);
-
-            if (success) {
-                resultArea.setText("Paiement effectué — Facture N° " + factureId);
-                chargerToutesLesFactures();
-            } else {
-                resultArea.setText("Échec du paiement. Facture introuvable.");
-            }
-
-        } catch (NumberFormatException e) {
-            resultArea.setText("ID de facture invalide.");
-        } catch (Exception e) {
-            resultArea.setText("Erreur lors du paiement: " + e.getMessage());
+            resultArea.setText("Erreur lors de la consultation : " + e.getMessage());
         }
     }
 
