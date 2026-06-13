@@ -458,7 +458,7 @@ public class ClientController {
         root.getChildren().addAll(
             ticket(sep2, mono),
             ticketCentre("BRICO-MERLIN", monoTitle),
-            ticketCentre("Point de Vente", mono),
+            ticketCentre("Poste vendeur", mono),
             ticket(sep2, mono)
         );
 

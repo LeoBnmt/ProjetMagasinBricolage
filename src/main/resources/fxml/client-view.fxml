@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.shape.Rectangle?>
+<?import org.controlsfx.control.SearchableComboBox?>
 
 <BorderPane xmlns="http://javafx.com/javafx/17.0.2-ea"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -21,7 +22,7 @@
          <VBox spacing="2.0">
             <padding><Insets top="24.0" right="20.0" bottom="20.0" left="20.0" /></padding>
             <Label text="BRICO-MERLIN" styleClass="sidebar-brand" />
-            <Label text="Point de Vente"     styleClass="sidebar-version" />
+            <Label text="Poste vendeur"     styleClass="sidebar-version" />
          </VBox>
 
          <!-- Séparateur -->
@@ -82,13 +83,13 @@
                <VBox styleClass="card" spacing="12.0">
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
                      <Label text="Référence :" styleClass="form-label" minWidth="140.0" />
-                     <ComboBox fx:id="referenceCombo" prefWidth="190.0" promptText="Sélectionner un article" />
+                     <SearchableComboBox fx:id="referenceCombo" prefWidth="220.0" />
                      <Button onAction="#consulterArticle" text="Consulter Stock" styleClass="btn-primary" />
                      <Button onAction="#voirTousLesArticles" text="Voir tous" styleClass="btn-primary" />
                   </HBox>
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
                      <Label text="Famille :" styleClass="form-label" minWidth="140.0" />
-                     <ComboBox fx:id="familleCombo" prefWidth="190.0" promptText="Sélectionner une famille" />
+                     <SearchableComboBox fx:id="familleCombo" prefWidth="220.0" />
                      <Button onAction="#rechercherParFamille" text="Rechercher par Famille" styleClass="btn-primary" />
                   </HBox>
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
@@ -132,7 +133,7 @@
                   <!-- Ajout article -->
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
                      <Label text="Article :" styleClass="form-label" minWidth="140.0" />
-                     <ComboBox fx:id="referenceVenteCombo" prefWidth="250.0" promptText="Sélectionner un article" />
+                     <SearchableComboBox fx:id="referenceVenteCombo" prefWidth="250.0" />
                      <Label text="Quantité :" styleClass="form-label" />
                      <TextField fx:id="quantiteField" prefWidth="80.0" promptText="1" />
                      <Button onAction="#ajouterAuPanier" text="Ajouter au panier" styleClass="btn-primary" />

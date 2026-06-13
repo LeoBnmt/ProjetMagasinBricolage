@@ -36,6 +36,13 @@
             <version>${mysql.version}</version>
         </dependency>
 
+        <!-- ControlsFX (SearchableComboBox, etc.) -->
+        <dependency>
+            <groupId>org.controlsfx</groupId>
+            <artifactId>controlsfx</artifactId>
+            <version>11.2.0</version>
+        </dependency>
+
         <!-- Tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

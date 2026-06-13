@@ -13,7 +13,7 @@ public class ClientApplication extends Application {
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(ClientApplication.class.getResource("/fxml/client-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 1050, 700);
-        stage.setTitle("Brico-Merlin - Point de Vente");
+        stage.setTitle("Brico-Merlin - Poste vendeur");
         stage.setScene(scene);
         stage.show();
     }
