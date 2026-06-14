@@ -213,7 +213,7 @@
 
          </StackPane>
 
-         <!-- Console (toujours visible en bas) -->
+         <!-- Console -->
          <VBox styleClass="result-section" spacing="5.0">
             <Label text="CONSOLE" styleClass="result-label" />
             <TextArea fx:id="resultArea"
