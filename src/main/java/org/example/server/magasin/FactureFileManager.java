@@ -63,6 +63,12 @@ public class FactureFileManager {
                 } else if (line.startsWith("Client : ")) {
                     current.setClientId(line.substring("Client : ".length()));
 
+                } else if (line.startsWith("Nom_client : ")) {
+                    current.setNomClient(line.substring("Nom_client : ".length()));
+
+                } else if (line.startsWith("Prenom_client : ")) {
+                    current.setPrenomClient(line.substring("Prenom_client : ".length()));
+
                 } else if (line.startsWith("Mode : ")) {
                     current.setModePaiement(line.substring("Mode : ".length()));
 

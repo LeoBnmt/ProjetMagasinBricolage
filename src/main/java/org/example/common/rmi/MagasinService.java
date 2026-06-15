@@ -25,11 +25,11 @@ public interface MagasinService extends Remote {
 
     List<String> rechercherArticleParFamille(String famille) throws RemoteException;
 
-    Facture passerEnCaisse(String clientId, Map<String, Integer> panier, String modePaiement) throws RemoteException;
+    Facture passerEnCaisse(String nom, String prenom, Map<String, Integer> panier, String modePaiement) throws RemoteException;
 
     Facture consulterFacture(Long factureId) throws RemoteException;
 
-    List<Facture> getFacturesClient(String clientId) throws RemoteException;
+    List<Facture> getFacturesClient(String nom, String prenom) throws RemoteException;
 
     boolean ajouterStock(String referenceArticle, int quantite) throws RemoteException;
 

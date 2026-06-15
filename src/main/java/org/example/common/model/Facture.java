@@ -14,6 +14,8 @@ public class Facture implements Serializable {
 
     private Long id;
     private String clientId;
+    private String nomClient;
+    private String prenomClient;
     private BigDecimal totalFacture;
     private List<LigneFacture> lignes;
     private String modePaiement;
@@ -57,6 +59,27 @@ public class Facture implements Serializable {
 
     public void setClientId(String clientId) {
         this.clientId = clientId;
+    }
+
+    public String getNomClient() {
+        return nomClient;
+    }
+
+    public void setNomClient(String nomClient) {
+        this.nomClient = nomClient;
+    }
+
+    public String getPrenomClient() {
+        return prenomClient;
+    }
+
+    public void setPrenomClient(String prenomClient) {
+        this.prenomClient = prenomClient;
+    }
+
+    public String getNomComplet() {
+        if (nomClient == null && prenomClient == null) return clientId;
+        return (nomClient != null ? nomClient : "") + " " + (prenomClient != null ? prenomClient : "");
     }
 
     public BigDecimal getTotalFacture() {
@@ -105,6 +128,8 @@ public class Facture implements Serializable {
         sb.append("FACTURE #").append(id).append("\n");
         sb.append("Date : ").append(dateFacturation).append("\n");
         sb.append("Client : ").append(clientId).append("\n");
+        if (nomClient != null)    sb.append("Nom_client : ").append(nomClient).append("\n");
+        if (prenomClient != null) sb.append("Prenom_client : ").append(prenomClient).append("\n");
         sb.append("Mode : ").append(modePaiement).append("\n");
         sb.append("Statut : ").append(payee ? "PAYEE" : "EN_ATTENTE").append("\n");
         sb.append(LINE_SEP).append("\n");

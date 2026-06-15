@@ -169,13 +169,36 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
     // =========================================================
 
     @Override
-    public Facture passerEnCaisse(String clientId, Map<String, Integer> panier, String modePaiement)
+    public Facture passerEnCaisse(String nom, String prenom, Map<String, Integer> panier, String modePaiement)
             throws RemoteException {
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
             conn.setAutoCommit(false);
 
-            Facture facture = new Facture(clientId, modePaiement);
+            PreparedStatement findClient = conn.prepareStatement(
+                    "SELECT id FROM clients WHERE nom_famille = ? AND prenom = ?");
+            findClient.setString(1, nom);
+            findClient.setString(2, prenom);
+            ResultSet rsClient = findClient.executeQuery();
+
+            int clientIntId;
+            if (rsClient.next()) {
+                clientIntId = rsClient.getInt("id");
+            } else {
+                PreparedStatement insertClient = conn.prepareStatement(
+                        "INSERT INTO clients (nom_famille, prenom) VALUES (?, ?)",
+                        Statement.RETURN_GENERATED_KEYS);
+                insertClient.setString(1, nom);
+                insertClient.setString(2, prenom);
+                insertClient.executeUpdate();
+                ResultSet keys = insertClient.getGeneratedKeys();
+                keys.next();
+                clientIntId = keys.getInt(1);
+            }
+
+            Facture facture = new Facture(String.valueOf(clientIntId), modePaiement);
+            facture.setNomClient(nom);
+            facture.setPrenomClient(prenom);
             facture.setPayee(true);
 
             for (Map.Entry<String, Integer> entry : panier.entrySet()) {
@@ -198,11 +221,17 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
             }
 
             conn.commit();
+            conn.setAutoCommit(true);
             factureStore.saveFacture(facture);
-            System.out.println("Facture #" + facture.getId() + " créée — " + panier.size() + " article(s)");
+            System.out.println("Facture #" + facture.getId() + " créée — " + panier.size() + " article(s) — Client: " + nom + " " + prenom);
             return facture;
 
         } catch (SQLException e) {
+            try {
+                Connection conn = DatabaseConnection.getInstance().getConnection();
+                conn.rollback();
+                conn.setAutoCommit(true);
+            } catch (SQLException ignored) {}
             throw new RemoteException("Erreur lors du passage en caisse", e);
         }
     }
@@ -216,9 +245,9 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
     }
 
     @Override
-    public List<Facture> getFacturesClient(String clientId) throws RemoteException {
+    public List<Facture> getFacturesClient(String nom, String prenom) throws RemoteException {
         return factureStore.readAllFactures().stream()
-                .filter(f -> clientId.equals(f.getClientId()))
+                .filter(f -> nom.equalsIgnoreCase(f.getNomClient()) && prenom.equalsIgnoreCase(f.getPrenomClient()))
                 .toList();
     }
 

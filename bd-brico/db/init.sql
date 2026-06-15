@@ -18,13 +18,20 @@ CREATE TABLE articles (
     FOREIGN KEY (famille_id) REFERENCES familles(id)
 ) ENGINE=InnoDB;
 
+CREATE TABLE clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom_famille VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL
+) ENGINE=InnoDB;
+
 CREATE TABLE factures (
     id BIGINT PRIMARY KEY,
-    client_id VARCHAR(100) NOT NULL,
+    client_id INT NOT NULL,
     date_facturation DATE NOT NULL,
     total DECIMAL(10,2) NOT NULL,
     mode_paiement VARCHAR(50) NOT NULL,
-    payee BOOLEAN NOT NULL DEFAULT TRUE
+    payee BOOLEAN NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (client_id) REFERENCES clients(id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE lignes_facture (
@@ -36,12 +43,6 @@ CREATE TABLE lignes_facture (
     prix_unitaire DECIMAL(10,2) NOT NULL,
     sous_total DECIMAL(10,2) NOT NULL,
     FOREIGN KEY (facture_id) REFERENCES factures(id)
-) ENGINE=InnoDB;
-
-CREATE TABLE clients (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nom_famille VARCHAR(100) NOT NULL,
-    prenom VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB;
 
 -- Données de test

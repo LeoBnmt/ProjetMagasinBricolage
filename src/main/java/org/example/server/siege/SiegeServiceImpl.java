@@ -47,8 +47,14 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
 
             int nouvelles = 0;
             for (Facture f : factures) {
+                int clientIntId;
+                try {
+                    clientIntId = Integer.parseInt(f.getClientId());
+                } catch (NumberFormatException e) {
+                    continue; // ignorer les anciennes factures sans client_id entier
+                }
                 stmtF.setLong(1, f.getId());
-                stmtF.setString(2, f.getClientId());
+                stmtF.setInt(2, clientIntId);
                 stmtF.setDate(3, Date.valueOf(f.getDateFacturation()));
                 stmtF.setBigDecimal(4, f.getTotalFacture());
                 stmtF.setString(5, f.getModePaiement());

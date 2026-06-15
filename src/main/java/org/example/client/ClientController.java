@@ -40,7 +40,8 @@ public class ClientController {
     @FXML private ComboBox<Famille>  familleCombo;
     @FXML private TextField nomClientField;
     @FXML private TextField prenomClientField;
-    @FXML private TextField clientIdField;
+    @FXML private TextField searchNomField;
+    @FXML private TextField searchPrenomField;
     @FXML private TextField quantiteField;
     @FXML private ComboBox<String> modePaiementCombo;
     @FXML private TextField factureIdField;
@@ -185,7 +186,8 @@ public class ClientController {
         panierTable.setPlaceholder(new Label("Panier vide"));
 
         factureIdColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        clientColumn.setCellValueFactory(new PropertyValueFactory<>("clientId"));
+        clientColumn.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getNomComplet()));
         totalColumn.setCellValueFactory(new PropertyValueFactory<>("totalFacture"));
         dateColumn.setCellValueFactory(new PropertyValueFactory<>("dateFacturation"));
         modePaiementColumn.setCellValueFactory(new PropertyValueFactory<>("modePaiement"));
@@ -229,7 +231,7 @@ public class ClientController {
     private void afficherDetailFacture(Facture facture) {
         StringBuilder sb = new StringBuilder();
         sb.append("=== FACTURE N° ").append(facture.getId()).append(" ===\n");
-        sb.append("Client : ").append(facture.getClientId()).append("\n");
+        sb.append("Client : ").append(facture.getNomComplet()).append("\n");
         sb.append("Date : ").append(facture.getDateFacturation()).append("\n");
         sb.append("Mode de paiement : ").append(facture.getModePaiement()).append("\n");
         sb.append("Payée : ").append(facture.isPayee() ? "Oui" : "Non").append("\n");
@@ -412,15 +414,13 @@ public class ClientController {
             resultArea.setText("Veuillez saisir le nom et le prénom du client.");
             return;
         }
-        String clientId = nom + " " + prenom;
-
         try {
             Map<String, Integer> panierMap = new LinkedHashMap<>();
             for (LigneFacture ligne : panier) {
                 panierMap.put(ligne.getReferenceArticle(), ligne.getQuantite());
             }
 
-            Facture facture = magasinService.passerEnCaisse(clientId, panierMap, modePaiement);
+            Facture facture = magasinService.passerEnCaisse(nom, prenom, panierMap, modePaiement);
 
             if (facture != null) {
                 resultArea.setText("Vente enregistrée — Facture N° " + facture.getId());
@@ -467,7 +467,7 @@ public class ClientController {
             ticket("", mono),
             ticket("Facture N° " + facture.getId(), monoBold),
             ticket("Date    : " + horodatage, mono),
-            ticket("Client  : " + facture.getClientId(), mono),
+            ticket("Client  : " + facture.getNomComplet(), mono),
             ticket(sep, mono)
         );
 
@@ -560,13 +560,14 @@ public class ClientController {
     @FXML
     private void voirFacturesClient() {
         try {
-            String clientId = clientIdField.getText().trim();
-            if (clientId.isEmpty()) {
-                resultArea.setText("Veuillez saisir un ID client");
+            String nom    = searchNomField.getText().trim();
+            String prenom = searchPrenomField.getText().trim();
+            if (nom.isEmpty() || prenom.isEmpty()) {
+                resultArea.setText("Veuillez saisir le nom et le prénom du client.");
                 return;
             }
 
-            List<Facture> factures = magasinService.getFacturesClient(clientId);
+            List<Facture> factures = magasinService.getFacturesClient(nom, prenom);
             if (!factures.isEmpty()) {
                 factureTable.setItems(FXCollections.observableArrayList(factures));
 
@@ -575,11 +576,11 @@ public class ClientController {
                     .map(Facture::getTotalFacture)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                resultArea.setText("Client " + clientId + " — " + factures.size()
+                resultArea.setText("Client " + nom + " " + prenom + " — " + factures.size()
                         + " facture(s) — Total dû : " + totalDu + "€");
             } else {
                 factureTable.setItems(FXCollections.observableArrayList());
-                resultArea.setText("Aucune facture pour le client : " + clientId);
+                resultArea.setText("Aucune facture pour le client : " + nom + " " + prenom);
             }
 
         } catch (Exception e) {

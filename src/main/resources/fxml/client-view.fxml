@@ -175,8 +175,10 @@
                      <Button onAction="#chargerToutesLesFactures"  text="Voir toutes"            styleClass="btn-primary" />
                   </HBox>
                   <HBox spacing="12.0" alignment="CENTER_LEFT">
-                     <Label text="Client ID :"     styleClass="form-label" minWidth="140.0" />
-                     <TextField fx:id="clientIdField"        prefWidth="160.0" promptText="ID du client" />
+                     <Label text="Nom :"    styleClass="form-label" minWidth="60.0" />
+                     <TextField fx:id="searchNomField"    prefWidth="130.0" promptText="Nom de famille" />
+                     <Label text="Prénom :" styleClass="form-label" minWidth="60.0" />
+                     <TextField fx:id="searchPrenomField" prefWidth="110.0" promptText="Prénom" />
                      <Button onAction="#voirFacturesClient"  text="Voir Factures Client" styleClass="btn-primary" />
                   </HBox>
                </VBox>
