@@ -1,7 +1,5 @@
 package org.example.server.siege;
 
-import org.example.common.model.Facture;
-import org.example.common.rmi.MagasinService;
 import org.example.common.rmi.SiegeService;
 
 import java.math.BigDecimal;
@@ -9,7 +7,6 @@ import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,15 +15,14 @@ import java.util.concurrent.TimeUnit;
 public class SiegeServer {
 
     private static SiegeService siegeService;
-    private static MagasinService magasinService;
-    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static boolean modeDemo = false;
 
     public static void main(String[] args) {
         for (String arg : args) {
             if ("--demo".equalsIgnoreCase(arg)) {
                 modeDemo = true;
-                System.out.println("[DEMO] Mode démo activé : archivage dans 30s, prix dans 60s.");
+                System.out.println("[DEMO] Mode démo activé : mise à jour des prix dans 60s.");
             }
         }
         try {
@@ -34,10 +30,9 @@ public class SiegeServer {
             siegeService = new SiegeServiceImpl();
             Naming.rebind("rmi://localhost:1098/SiegeService", siegeService);
             System.out.println("Serveur Siège démarré sur rmi://localhost:1098/SiegeService");
+            System.out.println("En attente des connexions des magasins...");
 
-            magasinService = connecterAuMagasin();
-
-            programmerTachesAutomatisees();
+            planifierMiseAJourPrix();
 
         } catch (Exception e) {
             System.err.println("Erreur lors du démarrage du serveur siège :");
@@ -45,20 +40,6 @@ public class SiegeServer {
         }
     }
 
-    private static MagasinService connecterAuMagasin() {
-        try {
-            MagasinService service = (MagasinService) Naming.lookup("rmi://localhost:1099/MagasinService");
-            System.out.println("Connecté au serveur Magasin (rmi://localhost:1099/MagasinService)");
-            return service;
-        } catch (Exception e) {
-            System.err.println("Impossible de se connecter au serveur Magasin : " + e.getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Calcule le nombre de secondes jusqu'au prochain déclenchement à l'heure indiquée.
-     */
     private static long secondesJusqua(int heure, int minute) {
         LocalDateTime maintenant = LocalDateTime.now();
         LocalDateTime prochaine  = maintenant.toLocalDate().atTime(heure, minute);
@@ -68,15 +49,10 @@ public class SiegeServer {
         return java.time.Duration.between(maintenant, prochaine).getSeconds();
     }
 
-    private static void programmerTachesAutomatisees() {
-        planifierMiseAJourPrix();
-        planifierArchivageFactures();
-    }
-
     private static void planifierMiseAJourPrix() {
-        long delai = modeDemo ? 90 : secondesJusqua(7, 0);
+        long delai = modeDemo ? 60 : secondesJusqua(7, 0);
         if (modeDemo) {
-            System.out.println("[DEMO] Mise à jour des prix prévue dans 90 secondes.");
+            System.out.println("[DEMO] Mise à jour des prix prévue dans 60 secondes.");
         } else {
             System.out.printf("Mise à jour des prix prévue dans %d h %d min (7h00)%n",
                     delai / 3600, (delai % 3600) / 60);
@@ -84,46 +60,14 @@ public class SiegeServer {
 
         scheduler.schedule(() -> {
             try {
-                if (magasinService == null) magasinService = connecterAuMagasin();
-                if (magasinService != null) {
-                    System.out.println("\n[SIÈGE → MAGASIN] Mise à jour des prix (7h00)...");
-                    Map<String, BigDecimal> nouveauxPrix = genererNouveauxPrix();
-                    siegeService.mettreAJourPrix(nouveauxPrix);
-                    magasinService.recevoirMiseAJourPrix(nouveauxPrix);
-                    System.out.println("[SIÈGE → MAGASIN] " + nouveauxPrix.size() + " prix transmis.");
-                }
+                System.out.println("\n[SIÈGE] Mise à jour des prix" + (modeDemo ? " [DEMO]" : " (7h00)") + "...");
+                Map<String, BigDecimal> nouveauxPrix = genererNouveauxPrix();
+                siegeService.mettreAJourPrix(nouveauxPrix);
+                System.out.println("[SIÈGE] " + nouveauxPrix.size() + " prix mis à jour en BD. Les magasins peuvent les récupérer.");
             } catch (Exception e) {
                 System.err.println("Erreur mise à jour des prix : " + e.getMessage());
-                magasinService = null;
             } finally {
-                planifierMiseAJourPrix(); // replanifier pour le lendemain à 7h
-            }
-        }, delai, TimeUnit.SECONDS);
-    }
-
-    private static void planifierArchivageFactures() {
-        long delai = modeDemo ? 30 : secondesJusqua(22, 0);
-        if (modeDemo) {
-            System.out.println("[DEMO] Archivage des factures prévu dans 30 secondes.");
-        } else {
-            System.out.printf("Archivage des factures prévu dans %d h %d min (22h00)%n",
-                    delai / 3600, (delai % 3600) / 60);
-        }
-
-        scheduler.schedule(() -> {
-            try {
-                if (magasinService == null) magasinService = connecterAuMagasin();
-                if (magasinService != null) {
-                    System.out.println("\n[MAGASIN → SIÈGE] Archivage des factures (22h00)...");
-                    List<Facture> factures = magasinService.getToutesLesFactures();
-                    siegeService.sauvegarderFactures(factures);
-                    System.out.println("[MAGASIN → SIÈGE] " + factures.size() + " facture(s) archivées.");
-                }
-            } catch (Exception e) {
-                System.err.println("Erreur archivage des factures : " + e.getMessage());
-                magasinService = null;
-            } finally {
-                planifierArchivageFactures(); // replanifier pour le lendemain à 22h
+                planifierMiseAJourPrix();
             }
         }, delai, TimeUnit.SECONDS);
     }

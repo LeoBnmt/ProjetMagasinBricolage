@@ -11,6 +11,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,6 +95,22 @@ public class SiegeServiceImpl extends UnicastRemoteObject implements SiegeServic
     // =========================================================
     //  Mise à jour des prix en BD
     // =========================================================
+
+    @Override
+    public Map<String, BigDecimal> getNouveauxPrix() throws RemoteException {
+        Map<String, BigDecimal> prix = new HashMap<>();
+        try {
+            Connection conn = DatabaseConnection.getInstance().getConnection();
+            PreparedStatement stmt = conn.prepareStatement("SELECT ref, prix_unitaire FROM articles");
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                prix.put(rs.getString("ref"), rs.getBigDecimal("prix_unitaire"));
+            }
+        } catch (SQLException e) {
+            throw new RemoteException("Erreur lors de la récupération des prix", e);
+        }
+        return prix;
+    }
 
     @Override
     public void mettreAJourPrix(Map<String, BigDecimal> nouveauPrix) throws RemoteException {

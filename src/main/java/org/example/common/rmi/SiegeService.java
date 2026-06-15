@@ -13,6 +13,8 @@ public interface SiegeService extends Remote {
 
     void mettreAJourPrix(Map<String, BigDecimal> nouveauPrix) throws RemoteException;
 
+    Map<String, BigDecimal> getNouveauxPrix() throws RemoteException;
+
     void sauvegarderFactures(List<Facture> factures) throws RemoteException;
 
     List<Article> getTousLesArticles() throws RemoteException;

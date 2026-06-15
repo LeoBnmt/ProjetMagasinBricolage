@@ -204,7 +204,11 @@ public class ClientController {
         // Clic sur une facture → afficher son détail dans la console
         factureTable.getSelectionModel().selectedItemProperty().addListener(
             (obs, ancien, selectionne) -> {
-                if (selectionne != null) afficherTicketCaisse(selectionne);
+                if (selectionne != null) {
+                    afficherTicketCaisse(selectionne);
+                    javafx.application.Platform.runLater(() ->
+                            factureTable.getSelectionModel().clearSelection());
+                }
             }
         );
     }

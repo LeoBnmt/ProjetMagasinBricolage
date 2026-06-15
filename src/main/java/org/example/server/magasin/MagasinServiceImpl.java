@@ -6,11 +6,9 @@ import org.example.common.model.Facture;
 import org.example.common.model.Famille;
 import org.example.common.model.LigneFacture;
 import org.example.common.rmi.MagasinService;
-import org.example.common.rmi.SiegeService;
 import org.example.common.util.DatabaseConnection;
 
 import java.math.BigDecimal;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
