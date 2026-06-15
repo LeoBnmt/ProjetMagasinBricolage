@@ -25,11 +25,7 @@ public interface MagasinService extends Remote {
 
     List<String> rechercherArticleParFamille(String famille) throws RemoteException;
 
-    boolean acheterArticle(String clientId, String referenceArticle, int quantite, String modePaiement) throws RemoteException;
-
     Facture passerEnCaisse(String clientId, Map<String, Integer> panier, String modePaiement) throws RemoteException;
-
-    boolean payerFacture(Long factureId, String modePaiement) throws RemoteException;
 
     Facture consulterFacture(Long factureId) throws RemoteException;
 
@@ -42,6 +38,4 @@ public interface MagasinService extends Remote {
     void recevoirMiseAJourPrix(Map<String, BigDecimal> nouveauxPrix) throws RemoteException;
 
     List<Facture> getToutesLesFactures() throws RemoteException;
-
-    void viderFichierFactures() throws RemoteException;
 }

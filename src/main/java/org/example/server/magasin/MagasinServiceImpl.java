@@ -167,40 +167,6 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
     // =========================================================
 
     @Override
-    public boolean acheterArticle(String clientId, String referenceArticle, int quantite, String modePaiement)
-            throws RemoteException {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            conn.setAutoCommit(false);
-
-            Article article = consulterStockArticle(referenceArticle);
-            if (article == null || article.getQuantiteEnStock() < quantite) {
-                conn.rollback();
-                return false;
-            }
-
-            String sql = "UPDATE articles SET stock = stock - ? WHERE ref = ?";
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, quantite);
-            stmt.setString(2, referenceArticle);
-            stmt.executeUpdate();
-            conn.commit();
-
-            Facture facture = new Facture(clientId, modePaiement);
-            facture.setPayee(true);
-            facture.ajouterLigne(new LigneFacture(
-                    referenceArticle, article.getNom(), quantite, article.getPrixUnitaire()));
-            factureStore.saveFacture(facture);
-
-            System.out.println("Facture #" + facture.getId() + " créée pour client " + clientId);
-            return true;
-
-        } catch (SQLException e) {
-            throw new RemoteException("Erreur lors de l'achat", e);
-        }
-    }
-
-    @Override
     public Facture passerEnCaisse(String clientId, Map<String, Integer> panier, String modePaiement)
             throws RemoteException {
         try {
@@ -248,11 +214,6 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
     }
 
     @Override
-    public boolean payerFacture(Long factureId, String modePaiement) throws RemoteException {
-        return factureStore.updateStatut(factureId, true, modePaiement);
-    }
-
-    @Override
     public List<Facture> getFacturesClient(String clientId) throws RemoteException {
         return factureStore.readAllFactures().stream()
                 .filter(f -> clientId.equals(f.getClientId()))
@@ -264,11 +225,6 @@ public class MagasinServiceImpl extends UnicastRemoteObject implements MagasinSe
         return factureStore.readAllFactures();
     }
 
-    @Override
-    public void viderFichierFactures() throws RemoteException {
-        factureStore.vider();
-        System.out.println("Fichier factures.txt vidé après archivage");
-    }
 
     @Override
     public BigDecimal calculerChiffreAffaires(LocalDate date) throws RemoteException {
