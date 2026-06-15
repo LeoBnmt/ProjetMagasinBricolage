@@ -20,8 +20,15 @@ public class SiegeServer {
     private static SiegeService siegeService;
     private static MagasinService magasinService;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private static boolean modeDemo = false;
 
     public static void main(String[] args) {
+        for (String arg : args) {
+            if ("--demo".equalsIgnoreCase(arg)) {
+                modeDemo = true;
+                System.out.println("[DEMO] Mode démo activé : archivage dans 30s, prix dans 60s.");
+            }
+        }
         try {
             LocateRegistry.createRegistry(1098);
             siegeService = new SiegeServiceImpl();
@@ -67,9 +74,13 @@ public class SiegeServer {
     }
 
     private static void planifierMiseAJourPrix() {
-        long delai = secondesJusqua(7, 0);
-        System.out.printf("Mise à jour des prix prévue dans %d h %d min (7h00)%n",
-                delai / 3600, (delai % 3600) / 60);
+        long delai = modeDemo ? 90 : secondesJusqua(7, 0);
+        if (modeDemo) {
+            System.out.println("[DEMO] Mise à jour des prix prévue dans 90 secondes.");
+        } else {
+            System.out.printf("Mise à jour des prix prévue dans %d h %d min (7h00)%n",
+                    delai / 3600, (delai % 3600) / 60);
+        }
 
         scheduler.schedule(() -> {
             try {
@@ -91,9 +102,13 @@ public class SiegeServer {
     }
 
     private static void planifierArchivageFactures() {
-        long delai = secondesJusqua(22, 0);
-        System.out.printf("Archivage des factures prévu dans %d h %d min (22h00)%n",
-                delai / 3600, (delai % 3600) / 60);
+        long delai = modeDemo ? 30 : secondesJusqua(22, 0);
+        if (modeDemo) {
+            System.out.println("[DEMO] Archivage des factures prévu dans 30 secondes.");
+        } else {
+            System.out.printf("Archivage des factures prévu dans %d h %d min (22h00)%n",
+                    delai / 3600, (delai % 3600) / 60);
+        }
 
         scheduler.schedule(() -> {
             try {

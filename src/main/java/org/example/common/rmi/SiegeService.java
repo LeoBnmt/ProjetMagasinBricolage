@@ -6,7 +6,6 @@ import org.example.common.model.Facture;
 import java.math.BigDecimal;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +18,4 @@ public interface SiegeService extends Remote {
     List<Article> getTousLesArticles() throws RemoteException;
 
     void synchroniserStock(List<Article> articles) throws RemoteException;
-
-    BigDecimal calculerChiffreAffairesTotal(LocalDate date) throws RemoteException;
 }
